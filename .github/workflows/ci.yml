@@ -1,0 +1,40 @@
+name: Verify
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: 'Cloudflare公開URL（空ならビルド成果物をテスト）'
+        required: false
+        type: string
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:app
+      - name: Check Cloudflare deployment
+        if: inputs.app_url != ''
+        env:
+          APP_BASE_URL: ${{ inputs.app_url }}
+        run: npm run test:app
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-test-report
+          path: playwright-report/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-static-site
+          path: dist/client/
