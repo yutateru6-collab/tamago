@@ -82,9 +82,10 @@ test('visual review: Japanese font, iPhone layouts and character motion',async({
     await shot(`${width}-home`);
     if(width===390) {
       await page.locator('.creature-motion').evaluate((el)=>{const svg=el as SVGSVGElement;svg.pauseAnimations();svg.setCurrentTime(0);});
-      const still=await page.locator('.art-stage').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-a.png`});
+      await page.locator('.eyelids').evaluate(el=>(el as SVGElement).style.display='none');
+      const still=await page.locator('.creature-motion').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-a.png`});
       await page.locator('.creature-motion').evaluate(el=>(el as SVGSVGElement).setCurrentTime(1.44));
-      const moved=await page.locator('.art-stage').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-b.png`});
+      const moved=await page.locator('.creature-motion').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-b.png`});
       expect(Buffer.compare(still,moved)).not.toBe(0);
       await page.emulateMedia({reducedMotion:'reduce'});
       await expect(page.locator('.creature-motion')).toBeHidden();

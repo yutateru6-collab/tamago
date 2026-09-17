@@ -75,3 +75,9 @@ When any text-entry control loses focus, dismiss the simulated keyboard. If the 
 The user explicitly requests full-screen iPhone-friendly rendering instead of a simulated device. App defaults to fullscreen; `?preview=1` retains the original calibrated runtime for development. This authorizes the related App/MobileRuntime/PhoneFrame changes and lock updates after verification. The original frame invariants above apply to preview mode only.
 
 The visual direction is an immersive woodland dwelling with warm lanterns, translucent moss-green navigation, parchment requests, and small creature animations. Explain immediately: putting the phone down helps the creature recover and build. 30-minute requests are voluntary, persist across reloads, and require an explicit self-report after elapsed time; never claim to detect device-wide use. No automatic punishment on return, unknown time, or cancellation. Preserve existing progress and keep demo controls separate from self-reported sessions.
+
+## Approved visual refinement — 2026-09-17
+- Use self-hosted Zen Maru Gothic for Japanese typography across headings, body, controls and sheets; avoid system Mincho and Georgia timer fallback.
+- Quiet time should show the illustrated dwelling and companion, a compact timer, and visual suggestions for time away.
+- Home character motion must be visibly localized to ears/tail, with a still illustration for reduced-motion users.
+- Verify iPhone widths in GitHub Actions (Chromium and WebKit), retain screenshots, and visually inspect both layouts and motion before delivery.
