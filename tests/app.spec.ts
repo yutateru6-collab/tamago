@@ -43,6 +43,7 @@ test('iPhone fullscreen, persisted promise, confirmation and no penalty on cance
   await page.getByRole('button',{name:'お約束のつづきを見る'}).click();
   await expect(page.getByRole('button',{name:'30分、スマホを休めた'})).toBeHidden();
   await page.clock.fastForward(30*60000);
+  await page.clock.resume();
   await page.getByRole('button',{name:'30分、スマホを休めた'}).click();
   await expect(page.getByRole('heading',{name:'30分、そっと見守ってくれた。'})).toBeVisible();
   await page.getByRole('button',{name:'住処をのぞく'}).click();
