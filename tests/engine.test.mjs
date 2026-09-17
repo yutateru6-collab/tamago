@@ -16,3 +16,20 @@ function storage(){const m=new Map();return {getItem:k=>m.get(k)??null,setItem:(
 test('reload retains partial crafting and stale writes fail',()=>{const s=storage(),r=new WorldRepository(s);const a=r.save(applyActivity(startCraft(initialWorld(0),'shelf'),[windowOf(0,30)]),0);assert.equal(new WorldRepository(s).load().crafting.minutes,30);assert.throws(()=>r.save(a,0));const b=r.save(applyActivity(r.load(),[windowOf(30*60000,30)]),1);assert.deepEqual(b.built,['shelf']);});
 test('corrupt data is never overwritten',()=>{const s=storage();s.setItem(STORAGE_KEY,'{broken');const r=new WorldRepository(s);assert.throws(()=>r.save(initialWorld(0),0));assert.equal(s.getItem(STORAGE_KEY),'{broken');});
 test('storage write failures propagate',()=>{const r=new WorldRepository({getItem:()=>null,setItem:()=>{throw new Error('quota');}});assert.throws(()=>r.save(initialWorld(0),0),/quota/);});
+
+test('quiet promise: wait, confirm once, and preserve old saves', async () => {
+  const { beginQuiet, completeQuiet } = await import('../.test-build/domain/engine.js');
+  const { isWorld } = await import('../.test-build/platform/storage.js');
+  const base = initialWorld(1000);
+  const started = beginQuiet(base, 1000);
+  assert.equal(isWorld(base), true);
+  assert.equal(isWorld(started), true);
+  assert.throws(() => completeQuiet(started, 1001));
+  const done = completeQuiet(started, 1801000);
+  assert.equal(done.vitality, base.vitality + 9);
+  assert.equal(done.habitat, base.habitat + 6);
+  assert.equal(done.quietSession, null);
+  assert.throws(() => completeQuiet(done, 1801000));
+  assert.equal(done.memories.filter(m => m.id === 'quiet:1000').length, 1);
+  assert.equal(isWorld(done), true);
+});

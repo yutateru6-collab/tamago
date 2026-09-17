@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { applyActivity, chooseDestination, initialWorld, startCraft } from '../domain/engine';
+import { applyActivity, beginQuiet, completeQuiet, chooseDestination, initialWorld, startCraft } from '../domain/engine';
 import type { ActivityKind, World } from '../domain/model';
 import { DemoActivityProvider } from '../platform/activity';
 import { STORAGE_KEY, WorldRepository } from '../platform/storage';
@@ -29,6 +29,10 @@ export function useWorld() {
   };
   return { world, ready, error, reload,
     simulate: (kind: ActivityKind, minutes: number) => transact(w => applyActivity(w, [new DemoActivityProvider().simulate(w, kind, minutes)])),
+    beginQuiet: () => transact(w => beginQuiet(w)),
+    completeQuiet: () => transact(w => completeQuiet(w)),
+    cancelQuiet: () => transact(w => ({ ...w, quietSession: null })),
+    reportUsage: () => transact(w => applyActivity(w, [{ id: `usage:${Date.now()}`, start: w.processedUntil, end: w.processedUntil + 30 * 60000, kind: 'usage', evidence: 'self-report' }])),
     craft: (id: string) => transact(w => startCraft(w, id)),
     travel: (id: string) => transact(w => chooseDestination(w, id)),
     acknowledge: () => transact(w => ({ ...w, seenMemoryIds: w.memories.map(m => m.id) })),

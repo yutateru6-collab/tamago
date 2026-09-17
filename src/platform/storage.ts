@@ -15,6 +15,7 @@ export function isWorld(v: unknown): v is World {
     && Number.isSafeInteger(w.expeditionCount) && w.expeditionCount >= 0
     && Array.isArray(w.built) && new Set(w.built).size === w.built.length && w.built.every(id => RECIPES.some(r => r.id === id))
     && (w.crafting === null || (!!w.crafting && RECIPES.some(r => r.id === w.crafting!.recipeId && finite(w.crafting!.minutes) && w.crafting!.minutes < r.minutes) && !w.built.includes(w.crafting.recipeId)))
+    && (w.quietSession == null || (typeof w.quietSession.id === 'string' && typeof w.quietSession.purpose === 'string' && Number.isSafeInteger(w.quietSession.startedAt) && w.quietSession.startedAt >= 0 && w.quietSession.endsAt === w.quietSession.startedAt + 1800000))
     && Array.isArray(w.memories) && w.memories.length <= 100 && w.memories.every(m => !!m && typeof m.id === 'string' && typeof m.title === 'string' && typeof m.detail === 'string' && finite(m.at) && ['craft','discovery','growth'].includes(m.kind))
     && Array.isArray(w.seenMemoryIds) && w.seenMemoryIds.every(id => typeof id === 'string');
 }

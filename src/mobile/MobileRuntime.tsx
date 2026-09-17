@@ -4,16 +4,16 @@ import { KeyboardDock, KeyboardProvider, useKeyboard } from "./Keyboard";
 import { PhoneFrame } from "./PhoneFrame";
 import { HomeIndicator, StatusBar } from "./components";
 
-export function MobileRuntime({ children }: PropsWithChildren) {
+export function MobileRuntime({ children, fullscreen = false }: PropsWithChildren<{ fullscreen?: boolean }>) {
   return (
     <MobileDeviceProvider>
-      <PhoneFrame>
+      <PhoneFrame fullscreen={fullscreen}>
         <KeyboardProvider>
           <KeyboardPreview />
-          <StatusBar />
+          {!fullscreen && <StatusBar />}
           <MobileAppViewport>{children}</MobileAppViewport>
-          <HomeIndicator />
-          <KeyboardDock />
+          {!fullscreen && <HomeIndicator />}
+          {!fullscreen && <KeyboardDock />}
         </KeyboardProvider>
       </PhoneFrame>
     </MobileDeviceProvider>

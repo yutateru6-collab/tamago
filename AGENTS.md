@@ -69,3 +69,9 @@ When any text-entry control loses focus, dismiss the simulated keyboard. If the 
 - Fixed phone chrome should not animate with pushed screens. Screen content can animate; the status bar, camera cutout, and preview chrome should stay put.
 - Keep the keyboard below the home indicator/safe area layer in z-index, and above ordinary app UI while visible.
 - Keep the home indicator as the topmost safe-area layer in the z-index above everything else in the prototype.
+
+## Approved product direction — 2026-09-18
+
+The user explicitly requests full-screen iPhone-friendly rendering instead of a simulated device. App defaults to fullscreen; `?preview=1` retains the original calibrated runtime for development. This authorizes the related App/MobileRuntime/PhoneFrame changes and lock updates after verification. The original frame invariants above apply to preview mode only.
+
+The visual direction is an immersive woodland dwelling with warm lanterns, translucent moss-green navigation, parchment requests, and small creature animations. Explain immediately: putting the phone down helps the creature recover and build. 30-minute requests are voluntary, persist across reloads, and require an explicit self-report after elapsed time; never claim to detect device-wide use. No automatic punishment on return, unknown time, or cancellation. Preserve existing progress and keep demo controls separate from self-reported sessions.

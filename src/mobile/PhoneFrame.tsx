@@ -61,7 +61,7 @@ function useDeviceScale(deviceWidth: number, deviceHeight: number) {
   return scale;
 }
 
-export function PhoneFrame({ children }: PropsWithChildren) {
+export function PhoneFrame({ children, fullscreen = false }: PropsWithChildren<{ fullscreen?: boolean }>) {
   const { device } = useMobileDevice();
   const { geometry } = device;
   const scale = useDeviceScale(geometry.device.width, geometry.device.height);
@@ -71,8 +71,8 @@ export function PhoneFrame({ children }: PropsWithChildren) {
 
   return (
     <ScreenPortalContext.Provider value={contextValue}>
-      <div className="phone-stage">
-        <DevicePicker />
+      <div className={fullscreen ? "phone-stage fullscreen-stage" : "phone-stage"}>
+        {!fullscreen && <DevicePicker />}
         <div
           className="phone-scale-box"
           style={{

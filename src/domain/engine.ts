@@ -19,8 +19,8 @@ export function applyActivity(original: World, windows: ActivityWindow[]): World
   const oldCondition = conditionOf(world);
   for (const window of [...windows].sort((a, b) => a.start - b.start)) {
     if (!Number.isSafeInteger(window.start) || !Number.isSafeInteger(window.end) || window.start < 0 || window.end <= window.start) throw new Error('時間の記録が不正です');
-    if (!['away', 'usage', 'unknown'].includes(window.kind) || !['demo', 'os'].includes(window.evidence)) throw new Error('計測情報が不正です');
-    if (window.evidence !== 'demo') throw new Error('OS計測はまだ接続されていません');
+    if (!['away', 'usage', 'unknown'].includes(window.kind) || !['demo', 'os', 'self-report'].includes(window.evidence)) throw new Error('計測情報が不正です');
+    if (window.evidence === 'os') throw new Error('OS計測はまだ接続されていません');
     if (window.end <= world.processedUntil) continue;
     const start = Math.max(window.start, world.processedUntil);
     const minutes = Math.min((window.end - start) / 60000, RULES.maxWindowMinutes);
@@ -76,4 +76,19 @@ export function chooseDestination(original: World, id: string): World {
   // Finish the current expedition before changing: no hidden loss of earned progress.
   if (original.expeditionMinutes > 0) throw new Error('今の探索が終わってから、行き先を変えられます');
   return { ...original, destination: id };
+}
+
+export function beginQuiet(original: World, now = Date.now()): World {
+  if (original.quietSession) return original;
+  const purpose = conditionOf(original) === 'weary' ? 'ひとやすみ' : original.crafting ? '住処づくり' : '小さな探索';
+  return { ...original, quietSession: { id: `quiet:${now}`, startedAt: now, endsAt: now + 30 * 60000, purpose } };
+}
+export function completeQuiet(original: World, now = Date.now()): World {
+  const session = original.quietSession;
+  if (!session || now < session.endsAt) throw new Error('お約束の30分が終わるまで、もう少し。');
+  // Explicit user confirmation, not inferred OS activity. Apply once in the same saved transaction.
+  const world = applyActivity(original, [{ id: session.id, start: original.processedUntil, end: original.processedUntil + 30 * 60000, kind: 'away', evidence: 'self-report' }]);
+  world.quietSession = null;
+  remember(world, { id: session.id, at: now, kind: 'growth', title: '30分、そっと見守ってくれた。', detail: 'あなたの自己申告で、30分の休息を記録しました。元気と住処が回復し、できるぶんだけ作業も進みました。' });
+  return world;
 }
