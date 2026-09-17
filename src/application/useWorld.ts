@@ -14,7 +14,7 @@ export function useWorld() {
   }, []);
   useEffect(() => { reload(); const listener = (e: StorageEvent) => { if (e.key === STORAGE_KEY) reload(); }; window.addEventListener('storage', listener); return () => window.removeEventListener('storage', listener); }, [reload]);
   const transact = async (change: (state: World) => World) => {
-    if (!ready) return;
+    if (!ready) return false;
     try {
       const commit = () => {
         const repo = new WorldRepository(window.localStorage);
@@ -25,7 +25,8 @@ export function useWorld() {
       // Same-origin tabs serialize writes. Native storage will use actual transactions.
       if (navigator.locks) await navigator.locks.request('tamago-world-write', commit);
       else commit();
-    } catch (e) { setError(e instanceof Error ? e.message : '保存できませんでした。容量や設定をご確認ください。'); }
+      return true;
+    } catch (e) { setError(e instanceof Error ? e.message : '保存できませんでした。容量や設定をご確認ください。'); return false; }
   };
   return { world, ready, error, reload,
     simulate: (kind: ActivityKind, minutes: number) => transact(w => applyActivity(w, [new DemoActivityProvider().simulate(w, kind, minutes)])),

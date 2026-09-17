@@ -14,12 +14,12 @@ export default function Prototype() {
   const [away,setAway]=useState(false);
   const [busy,setBusy]=useState(false);
   const unseen=app.world.memories.filter(m=>!app.world.seenMemoryIds.includes(m.id));
-  const act=async(fn:()=>Promise<void>)=>{if(busy)return;setBusy(true);try{await fn();}finally{setBusy(false);}};
+  const act=async(fn:()=>Promise<unknown>)=>{if(busy)return;setBusy(true);try{await fn();}finally{setBusy(false);}};
   return <div className="tamago">
     <MobileScroll key={away?'away':tab} className="app-screen"><main className="tamago-content">
       {app.error && <div className="error" role="alert">{app.error}<button onClick={app.reload}>読み直す</button></div>}
-      {away && app.world.quietSession ? <QuietTime world={app.world} busy={busy} complete={()=>void act(async()=>{await app.completeQuiet();setAway(false);})} cancel={()=>void act(async()=>{await app.cancelQuiet();setAway(false);})} back={()=>setAway(false)}/>
-      : tab==='home'?<Home world={app.world} onAway={()=>void act(async()=>{await app.beginQuiet();setAway(true);})} onSettings={()=>setSettings(true)}/>
+      {away && app.world.quietSession ? <QuietTime world={app.world} busy={busy} complete={()=>void act(async()=>{if(await app.completeQuiet())setAway(false);})} cancel={()=>void act(async()=>{if(await app.cancelQuiet())setAway(false);})} back={()=>setAway(false)}/>
+      : tab==='home'?<Home world={app.world} onAway={()=>void act(async()=>{if(await app.beginQuiet())setAway(true);})} onSettings={()=>setSettings(true)}/>
       : tab==='explore'?<Explore world={app.world} travel={id=>void act(()=>app.travel(id))}/>
       : tab==='habitat'?<Habitat world={app.world} craft={id=>void act(()=>app.craft(id))}/>
       : <Journal world={app.world}/>}
