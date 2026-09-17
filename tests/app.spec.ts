@@ -13,6 +13,7 @@ test('craft, return, persist, and deteriorate', async ({ page }) => {
   await page.getByRole('button', { name: '住処に戻る', exact: true }).click();
   await expect(page.getByRole('heading', { name: '宝物の小さな棚が、できていた。' })).toBeVisible();
   await page.getByRole('button', { name: '住処をのぞく' }).click();
+  await expect(page.getByRole('dialog', { name: 'おかえり', exact: true })).toBeHidden();
   await page.reload();
   await page.getByRole('button', { name: '住処', exact: true }).click();
   await expect(page.getByRole('button', { name: 'できあがり', exact: true })).toBeDisabled();
