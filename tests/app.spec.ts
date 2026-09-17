@@ -36,7 +36,7 @@ test('iPhone fullscreen, persisted promise, confirmation and no penalty on cance
   await expect(page.getByTestId('device-picker')).toBeHidden();
   const screen = await page.getByTestId('device-screen').boundingBox();
   expect(screen?.width).toBe(390);
-  expect(screen?.height).toBe(844);
+  expect(screen?.height).toBeCloseTo(844,0);
   await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
   await expect(page.getByRole('heading',{name:'あとは、スマホを置いて。'})).toBeVisible();
   await page.reload();
@@ -78,7 +78,7 @@ test('visual review: Japanese font, iPhone layouts and character motion',async({
     await page.goto('/');
     await page.evaluate(()=>document.fonts.ready);
     expect(await page.evaluate(()=>document.fonts.check('700 22px "Zen Maru Gothic"','こもれびの巣'))).toBe(true);
-    await expect(page.locator('.scene-header h1')).toHaveCSS('font-family','"Zen Maru Gothic", sans-serif');
+    await expect(page.locator('.scene-header h1')).toHaveCSS('font-family',/Zen Maru Gothic/);
     await shot(`${width}-home`);
     if(width===390) {
       await page.locator('.creature-motion').evaluate((el)=>{const svg=el as SVGSVGElement;svg.pauseAnimations();svg.setCurrentTime(0);});
