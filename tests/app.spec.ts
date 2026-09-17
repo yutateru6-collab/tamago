@@ -31,7 +31,7 @@ test('craft, return, persist, and deteriorate', async ({ page }) => {
 
 test('iPhone fullscreen, persisted promise, confirmation and no penalty on cancel', async ({ page }) => {
   await page.setViewportSize({width:390,height:844});
-  await page.clock.install();
+  await page.clock.setFixedTime(new Date('2026-09-18T00:00:00Z'));
   await page.goto('/');
   await expect(page.getByTestId('device-picker')).toBeHidden();
   const screen = await page.getByTestId('device-screen').boundingBox();
@@ -42,8 +42,7 @@ test('iPhone fullscreen, persisted promise, confirmation and no penalty on cance
   await page.reload();
   await page.getByRole('button',{name:'お約束のつづきを見る'}).click();
   await expect(page.getByRole('button',{name:'30分、スマホを休めた'})).toBeHidden();
-  await page.clock.fastForward(30*60000);
-  await page.clock.resume();
+  await page.clock.setFixedTime(new Date('2026-09-18T00:30:00Z'));
   await page.getByRole('button',{name:'30分、スマホを休めた'}).click();
   await expect(page.getByRole('heading',{name:'30分、そっと見守ってくれた。'})).toBeVisible();
   await page.getByRole('button',{name:'住処をのぞく'}).click();
