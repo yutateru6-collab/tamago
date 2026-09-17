@@ -66,3 +66,37 @@ test('small and landscape screens remain usable',async({page})=>{
     await expect(page.getByRole('dialog')).toBeHidden();
   }
 });
+
+test('visual review: Japanese font, iPhone layouts and character motion',async({page},testInfo)=>{
+  const shot=async(name:string)=>{
+    const path=`test-results/visual/${testInfo.project.name}-${name}.png`;
+    await page.screenshot({path});
+    await testInfo.attach(name,{path,contentType:'image/png'});
+  };
+  for(const width of [390,320,430]) {
+    await page.setViewportSize({width,height:width===320?568:844});
+    await page.goto('/');
+    await page.evaluate(()=>document.fonts.ready);
+    expect(await page.evaluate(()=>document.fonts.check('700 22px "Zen Maru Gothic"','こもれびの巣'))).toBe(true);
+    await expect(page.locator('.scene-header h1')).toHaveCSS('font-family','"Zen Maru Gothic", sans-serif');
+    await shot(`${width}-home`);
+    if(width===390) {
+      await page.locator('.creature-motion').evaluate((el)=>{const svg=el as SVGSVGElement;svg.pauseAnimations();svg.setCurrentTime(0);});
+      const still=await page.locator('.art-stage').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-a.png`});
+      await page.locator('.creature-motion').evaluate(el=>(el as SVGSVGElement).setCurrentTime(1.44));
+      const moved=await page.locator('.art-stage').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-b.png`});
+      expect(Buffer.compare(still,moved)).not.toBe(0);
+      await page.emulateMedia({reducedMotion:'reduce'});
+      await expect(page.locator('.creature-motion')).toBeHidden();
+      await page.emulateMedia({reducedMotion:'no-preference'});
+    }
+    await page.getByRole('button',{name:/30分、協力する|お約束のつづきを見る/}).click();
+    await expect(page.locator('.quiet-clock strong')).toHaveCSS('font-size','36px');
+    await page.getByRole('heading',{name:'あとは、スマホを置いて。'}).scrollIntoViewIfNeeded();
+    await page.locator('.quiet-back').scrollIntoViewIfNeeded();
+    await shot(`${width}-quiet`);
+    expect(await page.locator('.quiet-screen').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+    await page.getByRole('button',{name:'途中でやめる（罰はありません）'}).scrollIntoViewIfNeeded();
+    await shot(`${width}-quiet-bottom`);
+  }
+});

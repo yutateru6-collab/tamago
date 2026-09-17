@@ -1,3 +1,6 @@
+import '@fontsource/zen-maru-gothic/400.css';
+import '@fontsource/zen-maru-gothic/500.css';
+import '@fontsource/zen-maru-gothic/700.css';
 import { useState } from 'react';
 import { MobileScroll, BottomSheet } from './mobile';
 import { HomeIcon, GlobeIcon, BackpackIcon, ReaderIcon } from '@radix-ui/react-icons';

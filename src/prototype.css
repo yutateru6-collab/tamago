@@ -158,3 +158,45 @@ meter::-moz-meter-bar { background:#668350; }
 .bottom-nav { max-width:480px; }
 .scene-header,.condition-pill { z-index:3; }
 .settings { z-index:4; }
+
+/* One self-hosted storybook family, including Japanese glyphs, on every surface. */
+.tamago,.tamago h1,.tamago h2,.tamago h3,.sheet-body,.bottom-sheet,.scene-caption { font-family:'Zen Maru Gothic',sans-serif; }
+.tamago { font-size:14px; font-weight:400; }
+.tamago h1,.tamago h2,.tamago h3 { font-weight:700; letter-spacing:.04em; }
+.scene-header h1 { font-size:28px; letter-spacing:.14em; }
+.scene-header .eyebrow { font-size:12px; letter-spacing:0; }
+.scene-caption { font-size:11px; letter-spacing:0; }
+.home-paper h2 { font-size:22px; line-height:1.6; }
+.home-paper .request-copy { font-size:14px; }
+.request-heading,.time-tag,.tamago .honesty-note { font-size:11px; }
+.world-stats span,.bottom-nav button { font-size:12px; }
+.living-art { position:absolute; inset:0; overflow:hidden; }
+.quiet-screen { padding:calc(14px + env(safe-area-inset-top,0px)) 22px 24px; min-height:100dvh; }
+.quiet-screen .eyebrow { font-size:11px; margin:8px 0 5px; letter-spacing:.1em; }
+.quiet-screen h1 { font-size:22px; line-height:1.5; margin:6px 0 17px; }
+.quiet-screen h2 { font-size:19px; margin:22px 0 14px; }
+.quiet-vignette { position:relative; height:268px; border-radius:120px 120px 20px 20px; overflow:hidden; border:1px solid #b4bf7e55; box-shadow:0 12px 35px #071f1880; }
+.quiet-vignette .living-art { top:-130px; }
+.quiet-vignette .scene-art,.quiet-vignette .creature-motion { width:100%; }
+.quiet-vignette:after { content:''; position:absolute; inset:0; background:linear-gradient(transparent 65%,#142e27e8); pointer-events:none; }
+.quiet-story { position:absolute; z-index:2; bottom:12px; left:10px; right:10px; display:flex; align-items:center; justify-content:center; gap:8px; }
+.quiet-story p { margin:0; font-size:12px; color:#fff0c9; text-shadow:0 1px 4px #11281e; }
+.story-light { width:5px; height:5px; border-radius:50%; background:#f4d587; box-shadow:0 0 12px 3px #d5b95b80; }
+.quiet-clock { width:auto; height:auto; display:flex; align-items:center; justify-content:center; gap:18px; margin:16px 0 0; padding:12px 14px; border:1px solid #b5c28b35; border-radius:16px; background:#304b3e70; }
+.quiet-clock>div { position:static; display:flex; flex-direction:column; align-items:flex-start; gap:0; }
+.quiet-clock strong { font-family:'Zen Maru Gothic',sans-serif; font-weight:500; font-size:36px; letter-spacing:.04em; line-height:1.2; }
+.quiet-clock span { font-size:11px; }
+.quiet-clock .clock-leaf { font-size:33px; }
+.quiet-clock svg { width:38px; height:38px; margin-left:auto; }
+.quiet-clock circle { stroke-width:2; }
+.quiet-clock .clock-progress { stroke-width:3; }
+.quiet-rituals { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.quiet-rituals>div { display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 3px; border:1px solid #afbb8030; border-radius:16px; background:#67855514; }
+.quiet-rituals svg { width:35px; height:35px; fill:none; stroke:#dbce9e; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+.quiet-rituals span { font-size:11px; color:#d5dbc1; white-space:nowrap; }
+.quiet-screen .quiet-reassurance { font-size:13px; line-height:1.8; margin:18px 0 10px; }
+.quiet-screen .quiet-tip { padding:0; border:0; margin:0 0 7px; font-size:12px; }
+.quiet-tip span { font-size:10px; opacity:.75; }
+.quiet-screen>.primary { margin-top:22px; }
+@media(max-width:360px) { .scene-header h1 { font-size:25px; } .scene-header .eyebrow { font-size:10px; } .quiet-screen { padding-left:16px; padding-right:16px; } .quiet-screen h1 { font-size:20px; } .quiet-vignette { height:224px; } .quiet-vignette .living-art { top:-112px; } .home-paper h2 { font-size:20px; } }
+@media(prefers-reduced-motion:reduce) { .creature-motion { display:none; } }
