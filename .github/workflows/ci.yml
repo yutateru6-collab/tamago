@@ -23,13 +23,16 @@ jobs:
       - run: npm test
       - name: Validate Cloudflare deployment package
         run: npx --no-install wrangler deploy --dry-run
+      - run: npm run test:sites
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:app
-      - name: Check Cloudflare deployment
-        if: inputs.app_url != ''
+      - name: Check current Cloudflare deployment
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || inputs.app_url != ''
         env:
-          APP_BASE_URL: ${{ inputs.app_url }}
-        run: npm run test:app
+          APP_BASE_URL: ${{ inputs.app_url || 'https://tamago.itisnowornever271.workers.dev/' }}
+        run: |
+          node scripts/wait-for-production.mjs
+          npm run test:app
       - uses: actions/upload-artifact@v4
         if: always()
         with:
