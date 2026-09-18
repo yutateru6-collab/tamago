@@ -1,4 +1,35 @@
 import { test, expect } from '@playwright/test';
+
+test('painted companion follows world state and preserves playback choice',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','explore');
+  await page.getByRole('button',{name:'住処',exact:true}).click();
+  await page.getByRole('button',{name:'これをつくろう',exact:true}).click();
+  await page.getByRole('button',{name:'ホーム',exact:true}).click();
+  await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','craft');
+  await page.getByRole('button',{name:'設定と試作モード'}).click();
+  await page.getByRole('button',{name:'離れた時間を試す（2時間）'}).click();
+  await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
+  await page.getByRole('button',{name:'住処をのぞく'}).click();
+  const video=page.getByLabel('工房の青い子の原画アニメ');
+  await expect(video).toHaveJSProperty('paused',false);
+  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
+  await expect(page.locator('.life-keepsakes')).toContainText('宝物の小さな棚');
+  await page.getByRole('button',{name:'キャラの動きを止める'}).click();
+  await expect(video).toHaveJSProperty('paused',true);
+  await page.reload();
+  await expect(video).toBeHidden();
+  await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
+  await expect(video).toHaveJSProperty('paused',false);
+  await page.waitForTimeout(10500);
+  await page.screenshot({path:'test-results/painted-home.png'});
+  await page.getByRole('button',{name:'設定と試作モード'}).click();
+  await page.getByRole('button',{name:'使いすぎた状態を試す（2時間）'}).click();
+  await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
+  await expect(video).toHaveCount(0);
+  await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','rest');
+});
 test('craft, return, persist, and deteriorate', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
