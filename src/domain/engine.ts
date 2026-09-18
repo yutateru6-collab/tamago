@@ -1,5 +1,6 @@
 import { DESTINATIONS, RECIPES, RULES } from './catalog.js';
 import type { ActivityWindow, Condition, Material, Memory, World } from './model.js';
+import { homeState, repairHome, wearHome } from './home.js';
 
 export const conditionOf = (world: World): Condition => Math.min(world.vitality, world.habitat) < 30 ? 'weary' : Math.min(world.vitality, world.habitat) < 70 ? 'recovering' : 'thriving';
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
@@ -21,6 +22,7 @@ export function applyActivity(original: World, windows: ActivityWindow[]): World
     if (!Number.isSafeInteger(window.start) || !Number.isSafeInteger(window.end) || window.start < 0 || window.end <= window.start) throw new Error('時間の記録が不正です');
     if (!['away', 'usage', 'unknown'].includes(window.kind) || !['demo', 'os', 'self-report'].includes(window.evidence)) throw new Error('計測情報が不正です');
     if (window.evidence === 'os') throw new Error('OS計測はまだ接続されていません');
+    if (window.recordedAt !== undefined && (!Number.isSafeInteger(window.recordedAt) || window.recordedAt < 0 || window.recordedAt > 8640000000000000 - 32400000)) throw new Error('記録日時が不正です');
     if (window.end <= world.processedUntil) continue;
     const start = Math.max(window.start, world.processedUntil);
     const minutes = Math.min((window.end - start) / 60000, RULES.maxWindowMinutes);
@@ -28,7 +30,8 @@ export function applyActivity(original: World, windows: ActivityWindow[]): World
     if (window.kind === 'unknown') continue;
     if (window.kind === 'usage') {
       world.vitality = clamp(world.vitality - minutes * RULES.decayPerMinute);
-      world.habitat = clamp(world.habitat - minutes * RULES.habitatDecay);
+      const wear = wearHome(world, minutes, window.recordedAt ?? window.end);
+      world.habitat = clamp(world.habitat - wear);
       continue;
     }
     const restNeeded = Math.max(0, (RULES.workThreshold - world.vitality) / RULES.recoveryPerMinute);
@@ -36,8 +39,11 @@ export function applyActivity(original: World, windows: ActivityWindow[]): World
     world.vitality = clamp(world.vitality + minutes * RULES.recoveryPerMinute);
     world.habitat = clamp(world.habitat + minutes * RULES.habitatRecovery);
     world.growthMinutes += workMinutes;
-    // A creature does one job at a time. It crafts first, then explores with remaining time.
+    // Repair existing possessions before crafting or exploring; achievements stay intact.
     let exploration = workMinutes;
+    const previousWear = homeState(world).wear;
+    exploration -= repairHome(world, exploration);
+    if (previousWear > 0 && homeState(world).wear === 0) remember(world, { id: `repair:${window.id}`, at: window.end, kind: 'growth', title: '住処のお手入れが、できた。', detail: '飾りを戻し、傷んだものを直しました。材料も、つくった思い出も失っていません。' });
     if (world.crafting) {
       const recipe = RECIPES.find(r => r.id === world.crafting!.recipeId)!;
       const spent = Math.min(exploration, recipe.minutes - world.crafting.minutes);
@@ -80,7 +86,7 @@ export function chooseDestination(original: World, id: string): World {
 
 export function beginQuiet(original: World, now = Date.now()): World {
   if (original.quietSession) return original;
-  const purpose = conditionOf(original) === 'weary' ? 'ひとやすみ' : original.crafting ? '住処づくり' : '小さな探索';
+  const purpose = conditionOf(original) === 'weary' ? 'ひとやすみ' : homeState(original).wear > 0 ? '住処のお手入れ' : original.crafting ? '住処づくり' : '小さな探索';
   return { ...original, quietSession: { id: `quiet:${now}`, startedAt: now, endsAt: now + 30 * 60000, purpose } };
 }
 export function completeQuiet(original: World, now = Date.now()): World {

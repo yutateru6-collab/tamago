@@ -1,4 +1,52 @@
 import { test, expect } from '@playwright/test';
+import { initialWorld } from '../src/domain/engine';
+
+test('layered home: deterioration, preserved achievements, repair and visual stages',async({page},testInfo)=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  const base={...initialWorld(Date.UTC(2026,8,18)),vitality:100,habitat:100,built:['shelf','garden','hammock'],expeditionCount:3};
+  for (const [wear,stage] of [[0,'warm'],[25,'faded'],[50,'damaged'],[75,'empty']] as const) {
+    await page.evaluate(w=>localStorage.setItem('tamago.world.v1',JSON.stringify(w)),{...base,homeCare:{wear,day:'2026-09-18',dailyWear:0}});
+    await page.reload();
+    await expect(page.locator('.habitat-layers')).toHaveAttribute('data-home-stage',stage);
+    await expect.poll(()=>page.locator('.habitat-layers img').evaluateAll(images=>images.every(image=>(image as HTMLImageElement).complete&&(image as HTMLImageElement).naturalWidth>0))).toBe(true);
+    await expect(page.getByTestId('home-shelf')).toHaveCount(wear===75?0:1);
+    await expect(page.locator('.home-treasure')).toHaveCount(Math.max(0,3-Math.floor(wear/25)));
+    await expect(page.getByTestId('home-plant')).toHaveCount(wear===75?0:1);
+    const path=`test-results/${testInfo.project.name}-home-${stage}.png`;
+    await page.screenshot({path}); await testInfo.attach(stage,{path,contentType:'image/png'});
+  }
+  await page.getByRole('button',{name:'設定と試作モード'}).click();
+  await page.getByRole('button',{name:'離れた時間を試す（2時間）'}).click();
+  await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
+  await page.getByRole('button',{name:'住処をのぞく'}).click();
+  await expect(page.locator('.habitat-layers')).toHaveAttribute('data-home-stage','warm');
+  await expect(page.getByTestId('home-shelf')).toBeVisible();
+  await expect(page.getByTestId('home-plant')).toBeVisible();
+  await expect(page.locator('.home-treasure')).toHaveCount(3);
+  await page.reload();
+  await expect(page.getByTestId('home-shelf')).toBeVisible();
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('tamago.world.v1')!));
+  expect(saved.built).toEqual(base.built);
+  expect(saved.inventory).toEqual(base.inventory);
+});
+
+test('first thirty minutes visibly advances the unfinished shelf',async({page})=>{
+  await page.clock.setFixedTime(new Date('2026-09-18T00:00:00Z'));
+  await page.goto('/');
+  await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).click();
+  await page.getByRole('button',{name:'これをつくろう',exact:true}).click();
+  await page.getByRole('button',{name:'ホーム',exact:true}).click();
+  await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
+  await expect(page.getByRole('timer',{name:'お約束の残り時間'})).toContainText('30:00');
+  await page.clock.setFixedTime(new Date('2026-09-18T00:30:00Z'));
+  await page.getByRole('button',{name:'30分、スマホを休めた'}).click();
+  await page.getByRole('button',{name:'住処をのぞく'}).click();
+  await expect(page.getByTestId('home-shelf-progress')).toBeVisible();
+  await expect(page.locator('.home-scene-note')).toContainText('50%');
+  await page.reload();
+  await expect(page.locator('.home-scene-note')).toContainText('50%');
+});
 
 test('painted companion follows world state and preserves playback choice',async({page})=>{
   await page.setViewportSize({width:390,height:844});

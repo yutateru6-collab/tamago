@@ -7,6 +7,7 @@ export function isWorld(v: unknown): v is World {
   if (!v || typeof v !== 'object') return false;
   const w = v as World;
   return w.version === 1 && w.mode === 'demo' && Number.isSafeInteger(w.revision) && w.revision >= 0
+    && (w.homeCare === undefined || (!!w.homeCare && finite(w.homeCare.wear) && w.homeCare.wear <= 100 && finite(w.homeCare.dailyWear) && w.homeCare.dailyWear <= 25 && typeof w.homeCare.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(w.homeCare.day)))
     && finite(w.vitality) && w.vitality <= 100 && finite(w.habitat) && w.habitat <= 100
     && finite(w.growthMinutes) && Number.isSafeInteger(w.processedUntil) && w.processedUntil >= 0
     && !!w.inventory && (['wood','cloth','glass','seed'] as Material[]).every(k => Number.isSafeInteger(w.inventory[k]) && w.inventory[k] >= 0)

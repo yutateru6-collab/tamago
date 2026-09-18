@@ -22,7 +22,7 @@ export default function Prototype() {
     <MobileScroll key={away?'away':tab} className="app-screen"><main className="tamago-content">
       {app.error && <div className="error" role="alert">{app.error}<button onClick={app.reload}>読み直す</button></div>}
       {away && app.world.quietSession ? <QuietTime world={app.world} busy={busy} complete={()=>void act(async()=>{if(await app.completeQuiet())setAway(false);})} cancel={()=>void act(async()=>{if(await app.cancelQuiet())setAway(false);})} back={()=>setAway(false)}/>
-      : tab==='home'?<Home world={app.world} onAway={()=>void act(async()=>{if(await app.beginQuiet())setAway(true);})} onSettings={()=>setSettings(true)}/>
+      : tab==='home'?<Home world={app.world} onAway={()=>void act(async()=>{if(await app.beginQuiet())setAway(true);})} onSettings={()=>setSettings(true)} onHabitat={()=>setTab('habitat')}/>
       : tab==='explore'?<Explore world={app.world} travel={id=>void act(()=>app.travel(id))}/>
       : tab==='habitat'?<Habitat world={app.world} craft={id=>void act(()=>app.craft(id))}/>
       : <Journal world={app.world}/>}

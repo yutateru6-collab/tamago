@@ -208,6 +208,27 @@ meter::-moz-meter-bar { background:#668350; }
 .quiet-vignette .motion-toggle { bottom:53px; right:12px; }
 .painted-video { position:absolute; top:0; left:0; width:100%; height:auto; display:block; }
 .painted-video[hidden] { display:none; }
+.habitat-layers { position:absolute; top:0; left:0; width:100%; aspect-ratio:3/4; pointer-events:none; }
+.home-clean-plate { position:absolute; inset:0; width:100%; height:100%; clip-path:polygon(58% 0,100% 0,100% 100%,60% 100%,60% 77%,60% 70%,58% 65%,58% 62%,62% 59%,62% 54%,58% 44%); }
+.home-shelf { position:absolute; left:66%; top:36%; width:31%; }
+.home-shelf>img:first-child { width:100%; display:block; }
+.home-treasure { position:absolute; width:24%; }
+.treasure-0 { left:13%; top:34%; }
+.treasure-1 { left:51%; top:5%; }
+.treasure-2 { left:60%; top:64%; }
+.home-plant { position:absolute; width:19%; left:77%; top:68%; }
+.home-hammock { position:absolute; width:34%; left:61%; top:23%; }
+.home-found-wood { position:absolute; left:65%; top:72%; width:25%; height:7%; overflow:hidden; }
+.home-found-wood img { position:absolute; width:100%; bottom:0; }
+.shelf-in-progress { transform:translateY(22%); }
+.home-atmosphere { position:absolute; inset:0; background:#202d2470; opacity:0; }
+[data-home-stage="faded"] .home-atmosphere { opacity:.14; }
+[data-home-stage="damaged"] .home-atmosphere { opacity:.32; }
+[data-home-stage="empty"] .home-atmosphere { opacity:.55; }
+[data-home-stage="damaged"] .shelf-timber { filter:saturate(.45) brightness(.8); clip-path:polygon(0 0,100% 0,100% 100%,62% 100%,57% 78%,43% 85%,0 80%); }
+[data-home-stage="damaged"] .home-hammock { filter:saturate(.4); clip-path:polygon(0 0,100% 0,100% 100%,65% 100%,55% 60%,45% 100%,0 100%); }
+.home-scene-note { position:absolute; left:5%; top:80%; max-width:57%; padding:6px 10px; border-radius:12px; color:#fff6d9; background:#193c30db; font-size:10px; }
+.quiet-vignette .home-scene-note { display:none; }
 .life-status { margin:20px 0; padding:16px; border:1px solid #74886b55; border-radius:16px; background:#71856412; }
 .life-status h3 { margin:5px 0 8px; font-size:17px; }
 .life-status p { font-size:12px; line-height:1.8; }
