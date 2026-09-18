@@ -84,3 +84,6 @@ The visual direction is an immersive woodland dwelling with warm lanterns, trans
 
 ## Motion regression — 2026-09-18
 The user reports no visible motion. Verify natural uninterrupted playback and blinks in recorded Chromium/WebKit video, not by seeking animation time. Keep a visible play/pause control, honor reduced motion by default, and permit explicit user opt-in. Keep the choice across reloads.
+
+## Original painting integration — 2026-09-18
+Preserve the approved illustrations' painterly appearance. Integrate the woodland workshop companion first, keeping the existing exploration, crafting, recovery and self-report rules. Additional character actions should follow the existing world state; animation playback must never award progress. See docs/character-motion.md for the first-stage asset mapping and remaining work.

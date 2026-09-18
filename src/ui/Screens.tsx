@@ -3,6 +3,7 @@ import { DESTINATIONS, MATERIAL_NAMES, RECIPES } from '../domain/catalog';
 import { conditionOf } from '../domain/engine';
 import type { Material, World } from '../domain/model';
 import { Scene } from './Scene';
+import { LifeStatus } from './LifeStatus';
 
 export function Home({world, onAway, onSettings}: {world: World; onAway: () => void; onSettings: () => void}) {
   const condition = conditionOf(world);
@@ -14,6 +15,7 @@ export function Home({world, onAway, onSettings}: {world: World; onAway: () => v
     <button className="primary" onClick={onAway}><MoonIcon/>{world.quietSession?'お約束のつづきを見る':'30分、協力する'}<ArrowRightIcon/></button>
     <p className="honesty-note">自己申告で育てるWeb版 · ほかのアプリの使用は計測しません</p>
     <div className="world-stats">{[{label:'この子の元気',value:world.vitality},{label:'住処の心地よさ',value:world.habitat}].map(s=><div key={s.label}><span>{s.label}<b>{Math.round(s.value)}<small> / 100</small></b></span><meter min="0" max="100" value={s.value} aria-label={s.label}/></div>)}</div>
+    <LifeStatus world={world}/>
     <details className="how-it-works"><summary>どうすると、元気になるの？</summary><div className="rule-row"><span>☀</span><p><b>スマホを休む → 元気が戻る</b><br/>30分のお約束のあと「休めた」と伝えると、元気と住処が回復。元気が戻ると、制作や探索も進みます。</p></div><div className="rule-row"><span>☾</span><p><b>使いすぎを記録 → 少し疲れる</b><br/>自分で使いすぎを記録したときだけ、元気と住処が悪化します。途中でやめても罰はありません。また休めば回復します。</p></div><p className="muted">30分では探索や制作が終わらないこともあります。進み具合は引き継ぎます。</p><button className="text-link" onClick={onSettings}>使いすぎの記録・変化を試す</button></details>
   </section></>;
 }

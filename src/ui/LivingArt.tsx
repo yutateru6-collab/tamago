@@ -1,12 +1,13 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { World } from '../domain/model';
 import { conditionOf } from '../domain/engine';
+import { PaintedArt } from './PaintedArt';
 
 // A neutral displacement field leaves the illustration still. Only the soft fields
 // over the ear and tail deform pixels; there is no duplicated, sliding cut-out.
 const field = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1086" height="1448"><defs><radialGradient id="ear"><stop stop-color="#80ff80"/><stop offset="1" stop-color="#808080"/></radialGradient><radialGradient id="tail"><stop stop-color="#ff8080"/><stop offset="1" stop-color="#808080"/></radialGradient></defs><path fill="#808080" d="M0 0h1086v1448H0z"/><ellipse cx="366" cy="736" rx="140" ry="150" fill="url(#ear)"/><ellipse cx="321" cy="1016" rx="151" ry="144" fill="url(#tail)"/></svg>`)}`;
 const eyes = { recovering: [[567,824,22,25],[630,798,14,20]], thriving: [[592,789,22,26],[653,765,14,22]], weary: [[566,797,21,25],[623,763,14,21]] };
-export function LivingArt({world}: {world:World}) {
+function LegacyLivingArt({world}: {world:World}) {
   const condition=conditionOf(world);
   const id=`creature-${useId().replace(/[^a-zA-Z0-9]/g,'')}`;
   const displacement=useRef<SVGFEDisplacementMapElement>(null);
@@ -59,4 +60,8 @@ export function LivingArt({world}: {world:World}) {
     </svg>
     <button className="motion-toggle" onClick={toggle} aria-label={running?'キャラの動きを止める':'キャラの動きを再生する'} aria-pressed={running}><span aria-hidden="true">{running?'Ⅱ':'▷'}</span>動き：{running?'オン':'オフ'}</button>
   </div>;
+}
+
+export function LivingArt({world}: {world:World}) {
+  return conditionOf(world)==='thriving' ? <PaintedArt/> : <LegacyLivingArt world={world}/>;
 }
