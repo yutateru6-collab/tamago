@@ -1,0 +1,42 @@
+/* App-owned journey UI only. Do not alter the character, scene or mobile runtime. */
+.tamago .project-art { display:block; width:76px; height:90px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 4px 7px #101c1829); }
+.tamago .project-heading { display:flex; align-items:center; gap:14px; text-align:left; }
+.tamago .project-heading>div { flex:1; min-width:0; }
+.tamago .project-heading h2 { font-size:20px; margin:6px 0; }
+.tamago .project-heading p { font-size:13px; margin:4px 0; }
+.tamago .first-project { text-align:left; margin:20px 0; padding:16px; border:1px solid #76846066; background:#fcf6e44d; border-radius:16px; }
+.tamago .first-project .project-art { width:56px; height:72px; }
+.tamago .first-project h3 { font-size:16px; margin:5px 0; line-height:1.6; }
+.tamago .first-project .secondary { margin-top:14px; font-size:13px; padding:12px; border-radius:12px; }
+.tamago .first-project small { display:block; font-size:11px; color:#60674e; margin-top:10px; line-height:1.8; }
+.tamago .life-status { text-align:left; }
+.tamago .life-status .saved-project { display:flex; align-items:center; gap:15px; padding:12px 0; }
+.tamago .saved-project>div { flex:1; min-width:0; }
+.tamago .saved-project .project-art { width:58px; height:76px; }
+.tamago .saved-project-label { display:block; font-size:11px; color:#606b50; }
+.tamago .saved-project strong { display:block; color:#355e44; font-size:28px; font-weight:500; line-height:1.5; font-variant-numeric:tabular-nums; }
+.tamago .life-status .life-order { padding-top:12px; margin:8px 0 0; border-top:1px solid #74886b33; color:#536347; font-size:12px; line-height:1.9; }
+.tamago .life-order span { font-size:11px; }
+.tamago .repair-note { padding:10px; border-radius:10px; background:#77874c12; }
+.tamago .recipe-progress { padding:12px 0; }
+.tamago .recipe-progress>div { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; }
+.tamago .recipe-progress b { font-size:23px; color:#ebdba5; font-weight:500; }
+.tamago .recipe-progress progress { display:block; width:100%; height:10px; margin:8px 0; accent-color:#b6c990; }
+.tamago .recipe-progress small { display:block; font-size:12px; line-height:1.8; color:#c5d0b9; }
+.tamago .project-card .materials { margin:14px 0; }
+.tamago .project-card .materials span { font-size:12px; line-height:1.8; }
+.tamago .materials [data-short="true"] { color:#f0d6ac; border:1px dashed #c8ac7366; }
+.tamago .journey-notice { text-align:left; margin:18px 0; padding:16px; border-radius:14px; border:1px solid #d8c39155; color:#e2e6cc; background:#71805b20; font-size:13px; line-height:1.8; }
+.tamago .journey-notice h2 { font-size:19px; }
+.tamago .journey-notice p { font-size:13px; }
+.tamago .project-card .secondary svg { width:18px; height:18px; flex-shrink:0; }
+.tamago .memory p,.sheet-body .memory p { white-space:pre-line; overflow-wrap:anywhere; }
+@media(max-width:360px) {
+  .tamago .project-heading { gap:10px; }
+  .tamago .project-art { width:58px; height:76px; }
+  .tamago .project-heading h2 { font-size:18px; }
+  .tamago .first-project { padding:12px; }
+  .tamago .first-project .project-heading { align-items:flex-start; }
+  .tamago .first-project .project-art { width:42px; height:64px; }
+  .tamago .first-project h3 { font-size:15px; }
+}
