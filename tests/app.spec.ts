@@ -36,7 +36,7 @@ test('craft, return, persist, and deteriorate', async ({ page }) => {
   page.on('pageerror', e => errors.push(e.message));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'こもれびの巣' })).toBeVisible();
-  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 1086);
+  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 960);
   await page.getByRole('button', { name: '住処', exact: true }).click();
   await page.getByRole('button', { name: 'これをつくろう', exact: true }).click();
   await page.getByRole('button', { name: 'ホーム', exact: true }).click();
@@ -54,8 +54,9 @@ test('craft, return, persist, and deteriorate', async ({ page }) => {
   await page.getByRole('button', { name: '使いすぎた状態を試す（2時間）', exact: true }).click();
   await page.getByRole('button', { name: '使いすぎた状態を試す（2時間）', exact: true }).click();
   await page.getByRole('button', { name: '住処に戻る', exact: true }).click();
-  await expect(page.locator('.scene-art')).toHaveAttribute('src', '/art/weary.png');
-  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 1086);
+  await expect(page.locator('.scene-art')).toHaveAttribute('src', '/art/workshop-idle.jpg');
+  await expect(page.getByRole('region',{name:'住処の様子：まずは、ひとやすみ'})).toBeVisible();
+  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 960);
   await page.getByRole('button', { name: '記録', exact: true }).click();
   await expect(page.getByRole('heading', { name: '宝物の小さな棚が、できていた。' })).toBeVisible();
   expect(errors).toEqual([]);
