@@ -33,7 +33,7 @@ export function useWorld() {
     beginQuiet: () => transact(w => beginQuiet(w)),
     completeQuiet: () => transact(w => completeQuiet(w)),
     cancelQuiet: () => transact(w => ({ ...w, quietSession: null })),
-    reportUsage: () => transact(w => applyActivity(w, [{ id: `usage:${Date.now()}`, start: w.processedUntil, end: w.processedUntil + 30 * 60000, kind: 'usage', evidence: 'self-report' }])),
+    reportUsage: () => transact(w => applyActivity(w, [{ id: `usage:${Date.now()}`, start: w.processedUntil, end: w.processedUntil + 30 * 60000, kind: 'usage', evidence: 'self-report', recordedAt: Date.now() }])),
     craft: (id: string) => transact(w => startCraft(w, id)),
     travel: (id: string) => transact(w => chooseDestination(w, id)),
     acknowledge: () => transact(w => ({ ...w, seenMemoryIds: w.memories.map(m => m.id) })),

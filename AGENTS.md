@@ -87,3 +87,6 @@ The user reports no visible motion. Verify natural uninterrupted playback and bl
 
 ## Original painting integration — 2026-09-18
 Preserve the approved illustrations' painterly appearance. Integrate the woodland workshop companion first, keeping the existing exploration, crafting, recovery and self-report rules. Additional character actions should follow the existing world state; animation playback must never award progress. See docs/character-motion.md for the first-stage asset mapping and remaining work.
+
+## Recoverable home deterioration — 2026-09-18
+The app encourages time away from the smartphone. Excess-use reports gradually reduce plants, treasures and furnishings in the scene. Preserve built achievements and allow repair without charging the original crafting cost again. Cap daily home deterioration, never punish unknown time or cancellation, and preserve the approved painterly character motion. Home furnishings must be state-driven layers rather than permanently painted into the background. See docs/home-care.md for the provisional tuning and self-report boundary.
