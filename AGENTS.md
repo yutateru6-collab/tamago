@@ -81,3 +81,6 @@ The visual direction is an immersive woodland dwelling with warm lanterns, trans
 - Quiet time should show the illustrated dwelling and companion, a compact timer, and visual suggestions for time away.
 - Home character motion must be visibly localized to ears/tail, with a still illustration for reduced-motion users.
 - Verify iPhone widths in GitHub Actions (Chromium and WebKit), retain screenshots, and visually inspect both layouts and motion before delivery.
+
+## Motion regression — 2026-09-18
+The user reports no visible motion. Verify natural uninterrupted playback and blinks in recorded Chromium/WebKit video, not by seeking animation time. Keep a visible play/pause control, honor reduced motion by default, and permit explicit user opt-in. Keep the choice across reloads.

@@ -143,7 +143,7 @@ meter::-moz-meter-bar { background:#668350; }
 .quiet-screen .quiet-tip { font-size:11px; border-top:1px solid #afbb8030; padding-top:18px; margin-top:23px; }
 .quiet-screen .secondary { color:#e4d9b6; border-color:#a5b786; }
 .cancel-confirm { border:1px solid #afbb8044; border-radius:14px; padding:12px; margin-top:18px; }
-.eyelids { animation:blink 7.3s infinite; opacity:0; }
+.eyelids { opacity:0; }
 @keyframes blink { 0%,44%,47%,100% { opacity:0; } 45%,46% { opacity:1; } }
 .sunbeam { position:absolute; inset:0; background:radial-gradient(ellipse at 48% 10%,#fff6b92a,transparent 65%); animation:light-breathe 9s ease-in-out infinite alternate; pointer-events:none; }
 @keyframes light-breathe { to { opacity:.25; } }
@@ -153,7 +153,7 @@ meter::-moz-meter-bar { background:#668350; }
 .weary .sunbeam,.weary .motes { opacity:.25; }
 @media(min-width:700px) { .tamago { background:linear-gradient(#10231bd9,#10231be8),url('/art/recovering.png') center/cover; } .tamago .app-screen { background:transparent; } .tamago-content { box-shadow:0 0 100px #08181390; background:#172e28; } }
 @media(max-width:360px) { .home-paper { margin-left:10px; margin-right:10px; padding:17px; } .scene-header h1 { font-size:26px; } .scene-header .eyebrow { font-size:10px; } .home-paper h2 { font-size:19px; } }
-@media(prefers-reduced-motion:reduce) { .eyelids { opacity:0!important; } .tamago * { animation:none!important; transition:none!important; } }
+@media(prefers-reduced-motion:reduce) { .tamago * { animation:none!important; transition:none!important; } }
 .tamago-content { width:100%; max-width:480px; }
 .bottom-nav { max-width:480px; }
 .scene-header,.condition-pill { z-index:3; }
@@ -199,4 +199,10 @@ meter::-moz-meter-bar { background:#668350; }
 .quiet-tip span { font-size:10px; opacity:.75; }
 .quiet-screen>.primary { margin-top:22px; }
 @media(max-width:360px) { .scene-header h1 { font-size:25px; } .scene-header .eyebrow { font-size:10px; } .quiet-screen { padding-left:16px; padding-right:16px; } .quiet-screen h1 { font-size:20px; } .quiet-vignette { height:224px; } .quiet-vignette .living-art { top:-112px; } .home-paper h2 { font-size:20px; } }
-@media(prefers-reduced-motion:reduce) { .creature-motion { display:none; } }
+
+
+/* Explicit playback overrides OS reduction only after the user asks to play. */
+.living-art[data-motion="paused"] .creature-motion { visibility:hidden; }
+.motion-toggle { position:absolute; z-index:4; right:16px; bottom:53px; display:flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:8px 12px; border:1px solid #d8dba34d; border-radius:22px; color:#f5e8c6; background:#16352ddd; font-size:11px!important; box-shadow:0 2px 12px #0d241844; }
+.motion-toggle span { font-size:16px; }
+.quiet-vignette .motion-toggle { bottom:53px; right:12px; }

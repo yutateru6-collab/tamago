@@ -39,7 +39,9 @@ jobs:
         if: always()
         with:
           name: iphone-visual-review
-          path: test-results/visual/
+          path: |
+            test-results/visual/
+            test-results/**/*.webm
       - uses: actions/upload-artifact@v4
         with:
           name: cloudflare-static-site

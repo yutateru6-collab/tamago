@@ -80,17 +80,6 @@ test('visual review: Japanese font, iPhone layouts and character motion',async({
     expect(await page.evaluate(()=>document.fonts.check('700 22px "Zen Maru Gothic"','こもれびの巣'))).toBe(true);
     await expect(page.locator('.scene-header h1')).toHaveCSS('font-family',/Zen Maru Gothic/);
     await shot(`${width}-home`);
-    if(width===390) {
-      await page.locator('.creature-motion').evaluate((el)=>{const svg=el as SVGSVGElement;svg.pauseAnimations();svg.setCurrentTime(0);});
-      await page.locator('.eyelids').evaluate(el=>(el as SVGElement).style.display='none');
-      const still=await page.locator('.creature-motion').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-a.png`});
-      await page.locator('.creature-motion').evaluate(el=>(el as SVGSVGElement).setCurrentTime(1.44));
-      const moved=await page.locator('.creature-motion').screenshot({path:`test-results/visual/${testInfo.project.name}-motion-b.png`});
-      expect(Buffer.compare(still,moved)).not.toBe(0);
-      await page.emulateMedia({reducedMotion:'reduce'});
-      await expect(page.locator('.creature-motion')).toBeHidden();
-      await page.emulateMedia({reducedMotion:'no-preference'});
-    }
     await page.getByRole('button',{name:/30分、協力する|お約束のつづきを見る/}).click();
     await expect(page.locator('.quiet-clock strong')).toHaveCSS('font-size','36px');
     await page.getByRole('heading',{name:'あとは、スマホを置いて。'}).scrollIntoViewIfNeeded();
@@ -100,4 +89,46 @@ test('visual review: Japanese font, iPhone layouts and character motion',async({
     await page.getByRole('button',{name:'途中でやめる（罰はありません）'}).scrollIntoViewIfNeeded();
     await shot(`${width}-quiet-bottom`);
   }
+});
+
+
+test('real playback: visible blinking and sway, pause, resume and reduced-motion opt-in',async({page},testInfo)=>{
+  test.setTimeout(60000);
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.goto('/');
+  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth',1086);
+  await page.evaluate(()=>document.fonts.ready);
+  const art=page.locator('.creature-motion');
+  const capture=async(name:string)=>{const path=`test-results/visual/${testInfo.project.name}-${name}.png`;const bytes=await art.screenshot({path});await testInfo.attach(name,{path,contentType:'image/png'});return bytes;};
+  // Observe real time. Do not seek an animation or mock the clock in this test.
+  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
+  const closed=await capture('live-eyes-closed');
+  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','open');
+  const open=await capture('live-eyes-open');
+  expect(Buffer.compare(closed,open)).not.toBe(0);
+  const a=await capture('live-sway-a');
+  await page.waitForTimeout(700);
+  const b=await capture('live-sway-b');
+  expect(Buffer.compare(a,b)).not.toBe(0);
+  await page.getByRole('button',{name:'キャラの動きを止める'}).click();
+  await expect(art).toBeHidden();
+  await page.reload();
+  await expect(page.getByRole('button',{name:'キャラの動きを再生する'})).toBeVisible();
+  await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
+  await expect(art).toBeVisible();
+  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
+  await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
+  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
+  await page.getByRole('button',{name:'‹ 住処へ戻る'}).click();
+  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
+  // Fresh preference follows the OS, while an explicit play request takes precedence.
+  await page.evaluate(()=>localStorage.removeItem('tamago-character-motion'));
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.reload();
+  await expect(art).toBeHidden();
+  await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
+  await expect(art).toBeVisible();
+  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
+  await page.waitForTimeout(4000);
 });
