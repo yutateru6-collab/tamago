@@ -1,10 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { beginQuiet, completeQuiet, initialWorld, startCraft } from '../src/domain/engine';
 import { describeQuietProgress } from '../src/domain/progress';
 import type { World } from '../src/domain/model';
 
 const start = Date.UTC(2026, 8, 19);
 const rest = (world: World, at = start) => completeQuiet(beginQuiet(world, at), at + 1800000);
+async function shot(page: Page, path: string) {
+  await page.evaluate(() => document.fonts.ready);
+  // Let the actual sheet/scroll entrance settle; never seek or fake character animation time.
+  await page.waitForTimeout(650);
+  await page.screenshot({path});
+}
 
 test('rest report describes actual progress without changing rules or mutating input', () => {
   const before = startCraft(initialWorld(start), 'shelf');
@@ -39,6 +45,7 @@ test('rest report distinguishes recovery, repair and exploration with real mater
   expect(repaired.crafting?.minutes).toBe(0);
   expect(repaired.inventory).toEqual(damaged.inventory);
   expect(repaired.memories[0].detail).toContain('修繕完了');
+  expect(repaired.memories[0].detail).not.toContain('家具が戻りました');
   const explored = rest({...initialWorld(start), expeditionMinutes:30});
   expect(explored.memories[0].detail).toContain('木のかけら +2・ガラス玉 +1');
   expect(explored.expeditionMinutes).toBe(0);
@@ -50,8 +57,7 @@ test('journey: choose furniture, resume from habitat, see saved fifty percent af
   await page.goto('/');
   await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).click();
   await expect(page.locator('[data-recipe="shelf"]')).toContainText('そろった');
-  await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({path:`test-results/visual/${testInfo.project.name}-journey-390-furniture.png`});
+  await shot(page, `test-results/visual/${testInfo.project.name}-journey-390-furniture.png`);
   await page.getByRole('button',{name:'これをつくろう',exact:true}).click();
   await expect(page.getByRole('button',{name:'ホーム',exact:true})).toHaveAttribute('aria-current','page');
   await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','craft');
@@ -64,8 +70,7 @@ test('journey: choose furniture, resume from habitat, see saved fifty percent af
   const report = page.getByRole('dialog',{name:'おかえり',exact:true});
   await expect(report).toContainText('宝物の小さな棚：0 → 30 / 60分（50%）');
   await expect(report).toContainText('この子の元気：55 → 64 / 100');
-  await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({path:`test-results/visual/${testInfo.project.name}-journey-390-return.png`});
+  await shot(page, `test-results/visual/${testInfo.project.name}-journey-390-return.png`);
   const saved = await page.evaluate(() => localStorage.getItem('tamago.world.v1'));
   await page.reload();
   await expect(report).toContainText('宝物の小さな棚：0 → 30 / 60分（50%）');
@@ -74,7 +79,7 @@ test('journey: choose furniture, resume from habitat, see saved fifty percent af
   await expect(page.locator('.home-scene-note')).toContainText('50%');
   await page.getByRole('button',{name:'住処',exact:true}).click();
   await expect(page.getByRole('progressbar',{name:'宝物の小さな棚の制作進捗'})).toHaveAttribute('value','30');
-  await page.screenshot({path:`test-results/visual/${testInfo.project.name}-journey-390-halfway.png`});
+  await shot(page, `test-results/visual/${testInfo.project.name}-journey-390-halfway.png`);
   await page.getByRole('button',{name:'記録',exact:true}).click();
   await expect(page.locator('.memory').first()).toContainText('宝物の小さな棚：0 → 30 / 60分（50%）');
 });
@@ -104,13 +109,12 @@ test('320px and 430px journey cards fit and expose the real next action', async 
     await page.setViewportSize({width,height:width === 320 ? 568 : 844});
     await page.goto('/');
     await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).scrollIntoViewIfNeeded();
-    await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({path:`test-results/visual/${testInfo.project.name}-journey-${width}-guide.png`});
+    await shot(page, `test-results/visual/${testInfo.project.name}-journey-${width}-guide.png`);
     expect(await page.locator('.first-project').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).click();
     await page.locator('[data-recipe="shelf"]').scrollIntoViewIfNeeded();
     expect(await page.locator('[data-recipe="shelf"]').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
-    await page.screenshot({path:`test-results/visual/${testInfo.project.name}-journey-${width}-furniture.png`});
+    await shot(page, `test-results/visual/${testInfo.project.name}-journey-${width}-furniture.png`);
     await page.locator('[data-recipe="garden"]').getByRole('button',{name:'足りない材料を探しにいく'}).click();
     await expect(page.getByRole('heading',{name:'探索',exact:true})).toBeVisible();
   }

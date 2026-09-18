@@ -14,7 +14,7 @@ export function describeQuietProgress(before: World, after: World): string {
   const oldHome = homeState(before), newHome = homeState(after);
   if (newHome.wear < oldHome.wear) {
     workChanged = true;
-    lines.push(newHome.wear === 0 ? '住処のお手入れ：修繕完了。飾りと家具が戻りました。' : `住処のお手入れ：残り約${oldHome.repairMinutes} → ${newHome.repairMinutes}分`);
+    lines.push(newHome.wear === 0 ? '住処のお手入れ：修繕完了。住処を整えました。' : `住処のお手入れ：残り約${oldHome.repairMinutes} → ${newHome.repairMinutes}分`);
   }
   for (const id of after.built.filter(id => !before.built.includes(id))) {
     const recipe = RECIPES.find(item => item.id === id);

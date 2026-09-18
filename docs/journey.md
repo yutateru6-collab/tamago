@@ -21,4 +21,6 @@
 
 `npm test`、`npm run check:runtime`、`npm run build`、`npm run test:sites`、`npm run test:app`。
 
-追加のjourney.spec.tsは既存app.spec.tsとともにChromium / WebKitで実行。30分の途中制作、報告の再読み込み、材料不足から探索、キャンセル、保存失敗時の画面維持、320 / 390 / 430pxの画面を確認します。スクリーンショットは既存のiphone-visual-review成果物へ保存します。本番はworkflow_dispatchのapp_urlに公開URLを指定して別途確認します。
+追加のjourney.spec.tsは既存app.spec.tsとともにChromium / WebKitで実行。30分の途中制作、報告の再読み込み、材料不足から探索、キャンセル、保存失敗時の画面維持、320 / 390 / 430pxの画面を確認します。スクリーンショットは画面遷移が落ち着いてから撮影し、既存のiphone-visual-review成果物へ保存します。
+
+mainへのpushでは、ローカルビルドの検証後、公開URLのJavaScript/CSSがそのビルドとバイト単位で一致するまで最大5分待機します。一致してから公開URLを対象に同じブラウザテストを再実行します。古い公開版を見て本番確認済みとは扱いません。検証は公開静的ファイルの読み取りと、テスト用ブラウザ内の保存のみで、ユーザーの端末内データを変更しません。workflow_dispatchのapp_urlによる手動確認も維持します。
