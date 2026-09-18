@@ -27,7 +27,8 @@ test('painted companion follows world state and preserves playback choice',async
   await page.getByRole('button',{name:'設定と試作モード'}).click();
   await page.getByRole('button',{name:'使いすぎた状態を試す（2時間）'}).click();
   await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
-  await expect(video).toHaveCount(0);
+  await expect(video).toBeVisible();
+  await expect(page.locator('feDisplacementMap,.eyelids')).toHaveCount(0);
   await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','rest');
 });
 test('craft, return, persist, and deteriorate', async ({ page }) => {
@@ -35,7 +36,7 @@ test('craft, return, persist, and deteriorate', async ({ page }) => {
   page.on('pageerror', e => errors.push(e.message));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'こもれびの巣' })).toBeVisible();
-  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 1086);
+  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 960);
   await page.getByRole('button', { name: '住処', exact: true }).click();
   await page.getByRole('button', { name: 'これをつくろう', exact: true }).click();
   await page.getByRole('button', { name: 'ホーム', exact: true }).click();
@@ -53,8 +54,9 @@ test('craft, return, persist, and deteriorate', async ({ page }) => {
   await page.getByRole('button', { name: '使いすぎた状態を試す（2時間）', exact: true }).click();
   await page.getByRole('button', { name: '使いすぎた状態を試す（2時間）', exact: true }).click();
   await page.getByRole('button', { name: '住処に戻る', exact: true }).click();
-  await expect(page.locator('.scene-art')).toHaveAttribute('src', '/art/weary.png');
-  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 1086);
+  await expect(page.locator('.scene-art')).toHaveAttribute('src', '/art/workshop-idle.jpg');
+  await expect(page.getByRole('region',{name:'住処の様子：まずは、ひとやすみ'})).toBeVisible();
+  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 960);
   await page.getByRole('button', { name: '記録', exact: true }).click();
   await expect(page.getByRole('heading', { name: '宝物の小さな棚が、できていた。' })).toBeVisible();
   expect(errors).toEqual([]);
@@ -123,43 +125,27 @@ test('visual review: Japanese font, iPhone layouts and character motion',async({
 });
 
 
-test('real playback: visible blinking and sway, pause, resume and reduced-motion opt-in',async({page},testInfo)=>{
-  test.setTimeout(60000);
+test('original painting plays on home and quiet screen without legacy deformation',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto('/');
-  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth',1086);
-  await page.evaluate(()=>document.fonts.ready);
-  const art=page.locator('.creature-motion');
-  const capture=async(name:string)=>{const path=`test-results/visual/${testInfo.project.name}-${name}.png`;const bytes=await art.screenshot({path});await testInfo.attach(name,{path,contentType:'image/png'});return bytes;};
-  // Observe real time. Do not seek an animation or mock the clock in this test.
-  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
-  const closed=await capture('live-eyes-closed');
-  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','open');
-  const open=await capture('live-eyes-open');
-  expect(Buffer.compare(closed,open)).not.toBe(0);
-  const a=await capture('live-sway-a');
-  await page.waitForTimeout(700);
-  const b=await capture('live-sway-b');
-  expect(Buffer.compare(a,b)).not.toBe(0);
-  await page.getByRole('button',{name:'キャラの動きを止める'}).click();
-  await expect(art).toBeHidden();
-  await page.reload();
-  await expect(page.getByRole('button',{name:'キャラの動きを再生する'})).toBeVisible();
-  await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
-  await expect(art).toBeVisible();
-  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
+  const video=page.getByLabel('工房の青い子の原画アニメ');
+  await expect(page.locator('feDisplacementMap,.eyelids,.creature-motion')).toHaveCount(0);
+  await expect(video).toHaveJSProperty('paused',false);
+  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
   await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
-  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
+  await expect(video).toHaveJSProperty('paused',false);
+  await expect(page.locator('feDisplacementMap,.eyelids')).toHaveCount(0);
   await page.getByRole('button',{name:'‹ 住処へ戻る'}).click();
-  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
-  // Fresh preference follows the OS, while an explicit play request takes precedence.
+  await page.getByRole('button',{name:'キャラの動きを止める'}).click();
+  await expect(video).toHaveJSProperty('paused',true);
+  await page.reload();
+  await expect(video).toBeHidden();
   await page.evaluate(()=>localStorage.removeItem('tamago-character-motion'));
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.reload();
-  await expect(art).toBeHidden();
+  await expect(video).toBeHidden();
   await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
-  await expect(art).toBeVisible();
-  await expect(page.locator('.eyelids')).toHaveAttribute('data-blink','closed',{timeout:6000});
-  await page.waitForTimeout(4000);
+  await expect(video).toHaveJSProperty('paused',false);
+  await page.waitForTimeout(10500);
 });
