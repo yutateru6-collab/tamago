@@ -13,7 +13,7 @@
 .event-details p {font-size:12px;}
 .event-vignette {position:relative;width:min(100%,270px);aspect-ratio:3/4;overflow:hidden;border-radius:18px;margin:0 auto 14px;background:#223d30;}
 .event-vignette .home-scene-note {display:none;}
-.event-tableau {position:absolute;width:28%;left:61%;top:65%;z-index:65;filter:drop-shadow(0 4px 3px #211b1544);pointer-events:none;}
+.event-tableau {position:absolute;width:28%;left:61%;top:60%;z-index:65;filter:drop-shadow(0 4px 3px #211b1544);pointer-events:none;}
 .event-finished .event-tableau {animation:event-settle .9s ease-out;}
 .event-result {font-size:14px;line-height:1.8;}
 .rest-event-sheet>.text-link {display:block;min-height:44px;margin:8px auto 0;}

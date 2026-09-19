@@ -111,6 +111,9 @@ test('event cards and sheets fit phone widths and all invitations remain reachab
     expect(await page.locator('.rest-events').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
     await page.screenshot({path:`test-results/visual/${info.project.name}-events-${width}.png`});
     await page.getByRole('button',{name:'こもれびのお茶を楽しむ'}).click();
+    await expect.poll(()=>page.getByRole('dialog').locator('.event-icon').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
+    const prop=await page.locator('.event-tableau').boundingBox(),control=await page.getByRole('dialog').locator('.motion-toggle').boundingBox();
+    expect(prop!.y+prop!.height).toBeLessThanOrEqual(control!.y);
     await page.getByRole('button',{name:'お茶を淹れる',exact:true}).click();
     await expect(page.getByRole('status')).toContainText('ふたつのカップ');
     expect(await page.locator('.rest-event-sheet').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
@@ -120,7 +123,9 @@ test('event cards and sheets fit phone widths and all invitations remain reachab
 });
 
 test('additional companion respects reduced motion, explicit playback and pause without earning progress',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto('/?dev=1');
+  expect(await page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
   await page.getByRole('button',{name:'木の実色の子',exact:true}).click();
   const sprite=page.locator('.variant-companion');
   await expect(sprite).toHaveCSS('animation-name','none');
