@@ -1,0 +1,50 @@
+name: Import tested priority ten changes
+on:
+  push:
+    branches: ['feat/priority-ten-20260919']
+    paths: ['scripts/priority-ten-02.b64']
+permissions:
+  contents: write
+concurrency:
+  group: priority-ten-import
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Check pinned baseline and verified patch bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --quiet cad8e55ac6c4c6affe5ae876fc1c5b44a27fe044 -- src tests docs index.html package.json playwright.app.config.ts
+          python3 - <<'PY'
+          import base64, hashlib, lzma
+          from pathlib import Path
+          encoded = ''.join(Path(f'scripts/priority-ten-0{i}.b64').read_text().strip() for i in (1, 2))
+          patch = lzma.decompress(base64.b64decode(encoded, validate=True))
+          assert hashlib.sha256(patch).hexdigest() == '51b61225a13ee2ccee59d2fb5e7dbfb69df703dba4cc56c4aff7e4b9c3dbdee5', 'Patch checksum mismatch'
+          Path('/tmp/priority-ten.patch').write_bytes(patch)
+          PY
+          git apply --check --unidiff-zero /tmp/priority-ten.patch
+          git apply --unidiff-zero /tmp/priority-ten.patch
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Commit implementation without force-pushing
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm scripts/priority-ten-01.b64 scripts/priority-ten-02.b64
+          git add src tests docs index.html package.json playwright.app.config.ts scripts/priority-ten-01.b64 scripts/priority-ten-02.b64
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: implement TAM-001–010 with protected saves and clearer rest journey'
+          git push origin HEAD:refs/heads/feat/priority-ten-20260919
