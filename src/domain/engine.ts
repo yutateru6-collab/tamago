@@ -3,6 +3,7 @@ import type { ActivityWindow, Condition, Material, Memory, World } from './model
 import { homeState, repairHome, wearHome } from './home.js';
 import { describeQuietProgress } from './progress.js';
 import { creditRestEvents, newlyAvailableEvents } from './restEvents.js';
+import { prependMemory } from './memories.js';
 
 export const conditionOf = (world: World): Condition => Math.min(world.vitality, world.habitat) < 30 ? 'weary' : Math.min(world.vitality, world.habitat) < 70 ? 'recovering' : 'thriving';
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
@@ -12,7 +13,7 @@ export function initialWorld(now = Date.now()): World {
     crafting: null, built: [], memories: [], seenMemoryIds: [] };
 }
 function remember(world: World, memory: Memory) {
-  if (!world.memories.some(m => m.id === memory.id)) world.memories = [memory, ...world.memories].slice(0, 100);
+  world.memories = prependMemory(world.memories, memory);
   world.seenMemoryIds = world.seenMemoryIds.filter(id => world.memories.some(m => m.id === id));
 }
 /** Deterministic replay. OS adapters must normalize ordered non-overlapping evidence first.
