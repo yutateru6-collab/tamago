@@ -32,7 +32,7 @@ export function RestEventSheet({world,id,expected,busy,error,enjoy,close}:{world
   const changed=state.enjoyed!==expected;
   return <BottomSheet open onOpenChange={open=>{if(!open)close();}} title={event.name} description={finished?'この子と過ごした時間を、記録に残しました。':event.invitation} snap={0.9}>
     <div className={`sheet-body rest-event-sheet ${finished?'event-finished':''}`}>
-      <div className="event-vignette"><LivingArt world={world}/><div className="event-tableau"><EventIcon id={id} finished={finished}/></div></div>
+      <div className="event-vignette"><LivingArt world={world}/><div className="event-tableau"><EventIcon id={id} finished={finished}/></div>{finished&&<div className="event-reaction" aria-hidden="true"><span>✦</span><span>❧</span><span>✦</span></div>}</div>
       {finished?<><p className="event-result" role="status">{event.result}</p><button className="primary" onClick={close}>住処へ戻る</button></>
       :<><p className="event-result">{changed?'ほかの画面で記録が変わりました。一度閉じて確認してね。':`ためていたお楽しみを1回使います。残り ${state.available}回。`}</p>{error&&<p role="alert" className="error">{error}</p>}<button className="primary" disabled={busy||changed||state.available<1} onClick={async()=>{if(await enjoy())setFinished(true);}}>{event.action}</button><button className="text-link" onClick={close}>またあとで楽しむ</button></>}
     </div>

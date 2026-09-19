@@ -17,7 +17,7 @@ test('published video supports metadata and resume byte ranges',async({request})
 test('first thirty minutes visibly advances the unfinished shelf',async({page})=>{
   await page.clock.setFixedTime(new Date('2026-09-18T00:00:00Z'));
   await page.goto('/');
-  await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).click();
+  await page.getByRole('button',{name:'最初の棚をつくる'}).click();
   await page.getByRole('button',{name:'これをつくろう',exact:true}).click();
   await page.getByRole('button',{name:'ホーム',exact:true}).click();
   await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
@@ -171,4 +171,59 @@ test('explicit play works when autoplay was rejected with motion already enabled
   await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
   await page.getByRole('button',{name:'キャラの動きを止める'}).click();
   await expect(video).toHaveJSProperty('paused',true);
+});
+
+
+test('priority UX: first goal, compact secondary screens, safe usage confirmation, backup and focus',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('lang','ja');
+  await expect(page.getByRole('button',{name:'最初の棚をつくる'})).toBeVisible();
+  await expect(page.getByLabel('次の30分の見通し')).toContainText('最初は、小さな棚から');
+  expect(parseFloat(await page.locator('.honesty-note').evaluate(el=>getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(12);
+
+  await page.getByRole('button',{name:'探索',exact:true}).click();
+  const exploreHeading=page.getByRole('heading',{name:'探索',exact:true});
+  await expect(exploreHeading).toBeFocused();
+  await expect(page.getByText('いまの住処を見る',{exact:true})).toBeVisible();
+  await expect(page.locator('.world-preview')).toBeHidden();
+  await expect(page.locator('.choice-card').first().getByRole('button')).toBeInViewport();
+
+  await page.getByRole('button',{name:'ホーム',exact:true}).click();
+  await page.getByRole('button',{name:'設定と試作モード'}).click();
+  const before=await page.evaluate(()=>localStorage.getItem('tamago.world.v1'));
+  await page.getByRole('button',{name:'使いすぎ30分を記録する'}).click();
+  expect(await page.evaluate(()=>localStorage.getItem('tamago.world.v1'))).toBe(before);
+  await expect(page.getByRole('button',{name:'30分を記録する'})).toBeVisible();
+  await page.getByRole('button',{name:'やめる'}).click();
+
+  const download=page.waitForEvent('download');
+  await page.getByRole('button',{name:'バックアップを書き出す'}).click();
+  expect((await download).suggestedFilename()).toMatch(/^tamago-backup-\d{4}-\d{2}-\d{2}\.json$/);
+
+  const raw=await page.evaluate(()=>localStorage.getItem('tamago.world.v1'));
+  const world=raw?JSON.parse(raw):initialWorld();
+  const restoredWorld={...world,inventory:{...world.inventory,wood:9}};
+  const backup=JSON.stringify({format:'tamago-backup',version:1,exportedAt:Date.now(),world:restoredWorld});
+  const input=page.locator('input[type="file"]');
+  await input.setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});
+  await expect(page.getByRole('button',{name:'このバックアップを復元する'})).toBeVisible();
+  await page.getByRole('button',{name:'復元しない'}).click();
+  await expect(page.getByRole('status')).toContainText('現在の記録はそのまま');
+  await input.setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});
+  await page.getByRole('button',{name:'このバックアップを復元する'}).click();
+  await expect(page.getByRole('status')).toContainText('バックアップを復元しました');
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('tamago.world.v1')!).inventory.wood)).toBe(9);
+});
+
+
+test('priority actions stay visible at audited phone sizes',async({page})=>{
+  for(const size of [{width:390,height:844},{width:360,height:740}]){
+    await page.setViewportSize(size);
+    await page.goto('/');
+    await page.getByRole('button',{name:'探索',exact:true}).click();
+    await expect(page.locator('.choice-card').first().getByRole('button')).toBeInViewport();
+    await page.getByRole('button',{name:'住処',exact:true}).click();
+    await expect(page.getByRole('button',{name:'これをつくろう',exact:true}).first()).toBeInViewport();
+  }
 });

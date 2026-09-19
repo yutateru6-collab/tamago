@@ -34,3 +34,30 @@
 @keyframes event-settle {from{transform:translateY(-7px);opacity:.5;}to{transform:translateY(0);opacity:1;}}
 @media(prefers-reduced-motion:reduce) {.event-finished .event-tableau {animation:none;}}
 @media(max-width:360px) {.rest-event-card {grid-template-columns:46px minmax(0,1fr);padding:10px 8px;}.event-vignette {max-width:220px;}}
+
+
+/* TAM-001: a short, optional visual thank-you without replacing approved character art. */
+.event-reaction { position:absolute; inset:0; z-index:72; pointer-events:none; }
+.event-reaction span { position:absolute; color:#ffe5a4; font-size:26px; text-shadow:0 2px 8px #173126; opacity:0; animation:event-spark 1.6s ease-out forwards; }
+.event-reaction span:nth-child(1){left:25%;top:34%;animation-delay:.05s;}
+.event-reaction span:nth-child(2){left:53%;top:27%;animation-delay:.2s;}
+.event-reaction span:nth-child(3){left:68%;top:43%;animation-delay:.35s;}
+.event-finished .event-vignette .original-companion,
+.event-finished .event-vignette .painted-video,
+.event-finished .event-vignette .variant-companion { animation:event-companion-thanks 1.45s ease-out 1!important; }
+@keyframes event-companion-thanks { 0%,100%{transform:translateY(0) scale(1);} 38%{transform:translateY(-4px) scale(1.015);} 68%{transform:translateY(-1px) scale(1.006);} }
+@keyframes event-spark { 0%{opacity:0;transform:translateY(6px) scale(.7);} 28%{opacity:1;} 100%{opacity:0;transform:translateY(-12px) scale(1.1);} }
+
+/* TAM-009: event conditions remain readable on a phone. */
+.event-interval {font-size:12px;}
+.rest-event-card p,.event-details p {font-size:12px;line-height:1.65;}
+.event-details summary {font-size:12px;}
+.event-button {font-size:13px;}
+
+@media(prefers-reduced-motion:reduce) {
+  .event-reaction span,
+  .event-finished .event-vignette .original-companion,
+  .event-finished .event-vignette .painted-video,
+  .event-finished .event-vignette .variant-companion { animation:none!important; }
+  .event-reaction span { opacity:.8; }
+}

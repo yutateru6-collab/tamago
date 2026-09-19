@@ -1,4 +1,4 @@
-import { DESTINATIONS, MATERIAL_NAMES, RECIPES } from './catalog.js';
+import { DESTINATIONS, MATERIAL_NAMES, RECIPES, RULES } from './catalog.js';
 import { homeState } from './home.js';
 import type { Material, World } from './model.js';
 
@@ -42,4 +42,38 @@ export function describeQuietProgress(before: World, after: World): string {
   if (materials.length) lines.push(`見つけた材料：${materials.join('・')}`);
   if (!workChanged) lines.push('今回は元気の回復が進みました。作業のつづきは、元気が戻ってから。');
   return lines.join('\n');
+}
+
+
+export function quietPlan(world: World): { title: string; detail: string } {
+  const recoveryMinutes = Math.max(0, (RULES.workThreshold - world.vitality) / RULES.recoveryPerMinute);
+  const repairMinutes = homeState(world).repairMinutes;
+  const prefix = recoveryMinutes > 0 ? recoveryMinutes : repairMinutes > 0 ? repairMinutes : 0;
+  if (recoveryMinutes >= 30) return {
+    title: '今回は、元気の回復が中心。',
+    detail: `作業できる元気まで、あと約${Math.ceil(recoveryMinutes)}分。次の30分は回復を優先します。`,
+  };
+  if (repairMinutes > 0) {
+    const total = recoveryMinutes + repairMinutes;
+    return {
+      title: recoveryMinutes > 0 ? '回復してから、住処をお手入れ。' : '今回は、住処のお手入れ。',
+      detail: `今の状態なら、お手入れ完了まで約${Math.max(1, Math.ceil(total / 30))}回の30分が目安です。`,
+    };
+  }
+  if (world.crafting) {
+    const recipe = RECIPES.find(item => item.id === world.crafting!.recipeId)!;
+    const remaining = Math.max(0, recipe.minutes - world.crafting.minutes);
+    const total = recoveryMinutes + remaining;
+    return {
+      title: `${recipe.name}を、少しずつ。`,
+      detail: `今の状態なら完成まで約${Math.max(1, Math.ceil(total / 30))}回の30分。あと約${Math.ceil(remaining)}分の制作です。`,
+    };
+  }
+  const destination = DESTINATIONS.find(item => item.id === world.destination)!;
+  const remaining = Math.max(0, destination.minutes - world.expeditionMinutes);
+  const total = recoveryMinutes + remaining;
+  return {
+    title: `${destination.name}の探索へ。`,
+    detail: `次の拾い物まで約${Math.max(1, Math.ceil(total / 30))}回の30分。あと約${Math.ceil(remaining)}分の探索です。`,
+  };
 }

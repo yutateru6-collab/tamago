@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { initialWorld, applyActivity, startCraft, conditionOf, chooseDestination } from '../.test-build/domain/engine.js';
-import { WorldRepository, STORAGE_KEY } from '../.test-build/platform/storage.js';
+import { WorldRepository, STORAGE_KEY, createBackup, parseBackup } from '../.test-build/platform/storage.js';
 import { homeState, homeDay } from '../.test-build/domain/home.js';
 const windowOf=(start,minutes,kind='away')=>({id:`${start}:${kind}`,start,end:start+minutes*60000,kind,evidence:'demo'});
 test('home wear caps per recorded day, keeps achievements, and does not reset on clock rollback',()=>{
@@ -52,6 +52,36 @@ function storage(){const m=new Map();return {getItem:k=>m.get(k)??null,setItem:(
 test('reload retains partial crafting and stale writes fail',()=>{const s=storage(),r=new WorldRepository(s);const a=r.save(applyActivity(startCraft(initialWorld(0),'shelf'),[windowOf(0,30)]),0);assert.equal(new WorldRepository(s).load().crafting.minutes,30);assert.throws(()=>r.save(a,0));const b=r.save(applyActivity(r.load(),[windowOf(30*60000,30)]),1);assert.deepEqual(b.built,['shelf']);});
 test('corrupt data is never overwritten',()=>{const s=storage();s.setItem(STORAGE_KEY,'{broken');const r=new WorldRepository(s);assert.throws(()=>r.save(initialWorld(0),0));assert.equal(s.getItem(STORAGE_KEY),'{broken');});
 test('storage write failures propagate',()=>{const r=new WorldRepository({getItem:()=>null,setItem:()=>{throw new Error('quota');}});assert.throws(()=>r.save(initialWorld(0),0),/quota/);});
+
+test('milestone memories survive after more than one hundred repeat logs', async()=>{
+  const { prependMemory, MAX_MEMORIES } = await import('../.test-build/domain/memories.js');
+  const milestone={id:'craft:shelf',at:1,kind:'craft',title:'棚ができた',detail:'節目'};
+  let memories=[milestone];
+  for(let i=0;i<150;i++) memories=prependMemory(memories,{id:`discovery:stress:${i}`,at:i+2,kind:'discovery',title:'探索',detail:'反復ログ'});
+  assert.ok(memories.length<=MAX_MEMORIES);
+  assert.ok(memories.some(memory=>memory.id==='craft:shelf'));
+  assert.equal(memories[0].id,'discovery:stress:149');
+  assert.equal(isWorld({...initialWorld(0),memories,seenMemoryIds:[]}),true);
+});
+
+test('backup round-trip is validated and rejects corrupt, future and oversized files',()=>{
+  const world={...initialWorld(0),built:['shelf'],memories:[{id:'craft:shelf',at:1,kind:'craft',title:'棚',detail:'完成'}]};
+  const raw=createBackup(world,1234);
+  assert.deepEqual(parseBackup(raw),world);
+  assert.throws(()=>parseBackup('{broken'),/バックアップを読めません/);
+  assert.throws(()=>parseBackup(JSON.stringify({format:'tamago-backup',version:2,exportedAt:1,world})),/版にはまだ対応/);
+  assert.throws(()=>parseBackup('x'.repeat(1_000_001)),/大きすぎます/);
+});
+
+test('next thirty-minute plan distinguishes recovery, repair, crafting and exploration',async()=>{
+  const { quietPlan }=await import('../.test-build/domain/progress.js');
+  assert.match(quietPlan({...initialWorld(0),vitality:0}).title,/回復/);
+  assert.match(quietPlan({...initialWorld(0),homeCare:{wear:15,day:'2026-09-19',dailyWear:0}}).title,/お手入れ/);
+  assert.match(quietPlan(startCraft(initialWorld(0),'shelf')).detail,/完成まで約2回/);
+  assert.match(quietPlan(initialWorld(0)).detail,/次の拾い物まで約2回/);
+});
+
+
 
 test('quiet promise: wait, confirm once, and preserve old saves', async () => {
   const { beginQuiet, completeQuiet } = await import('../.test-build/domain/engine.js');

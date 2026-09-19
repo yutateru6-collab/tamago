@@ -1,4 +1,5 @@
 import type { World } from './model.js';
+import { prependMemory } from './memories.js';
 
 // Each confirmed minute contributes to every event. Unused invitations never expire.
 export const REST_EVENTS = [
@@ -29,7 +30,7 @@ export function enjoyRestEvent(original: World, id: string, expectedEnjoyed: num
   const world = structuredClone(original);
   world.restEvents = { minutes: state.minutes, enjoyed: { ...world.restEvents?.enjoyed, [id]: state.enjoyed + 1 } };
   const memory = { id: `event:${id}:${state.enjoyed+1}`, at: now, kind: 'event' as const, title: `${event.name}を、一緒に。`, detail: event.result };
-  world.memories = [memory, ...world.memories].slice(0,100);
+  world.memories = prependMemory(world.memories, memory);
   // The event sheet is the receipt; do not also open a competing return sheet.
   world.seenMemoryIds = [...world.seenMemoryIds, memory.id].filter(key => world.memories.some(m => m.id === key));
   return world;

@@ -12,9 +12,9 @@ export function QuietTime({world, busy, complete, cancel, back}: {world:World; b
   const progress=Math.min(1,Math.max(0,(now-session.startedAt)/1800000));
   return <section className="quiet-screen">
     <button className="text-link quiet-back" onClick={back}>‹ 住処へ戻る</button>
-    <p className="eyebrow">この子と、30分のお約束</p><h1>{remaining?'あとは、スマホを置いて。':'おかえり。休めたかな？'}</h1>
+    <p className="eyebrow">この子と、30分のお約束</p><h1 tabIndex={-1}>{remaining?'あとは、スマホを置いて。':'おかえり。休めたかな？'}</h1>
     <div className="quiet-vignette"><LivingArt world={world}/><div className="quiet-story"><span className="story-light"/><p>{remaining?'すこし休んで、またつくろう。':'待っていてくれて、ありがとう。'}</p></div></div>
-    <div className="quiet-clock" role="timer" aria-label="お約束の残り時間"><span className="clock-leaf" aria-hidden="true">☾</span><div><span>{remaining?'お約束まで、あと':'お約束の時間が過ぎました'}</span><strong>{remaining?`${String(Math.floor(remaining/60)).padStart(2,'0')}:${String(remaining%60).padStart(2,'0')}`:'30分'}</strong></div><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle className="clock-progress" cx="20" cy="20" r="17" strokeDasharray="107" strokeDashoffset={107*(1-progress)}/></svg></div>
+    <div className="quiet-clock" role="timer" aria-live="off" aria-label="お約束の残り時間"><span className="clock-leaf" aria-hidden="true">☾</span><div><span>{remaining?'お約束まで、あと':'お約束の時間が過ぎました'}</span><strong>{remaining?`${String(Math.floor(remaining/60)).padStart(2,'0')}:${String(remaining%60).padStart(2,'0')}`:'30分'}</strong></div><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle className="clock-progress" cx="20" cy="20" r="17" strokeDasharray="107" strokeDashoffset={107*(1-progress)}/></svg></div>
     <p className="quiet-reward">今回「休めた」と伝えると、{REST_EVENTS.filter(e=>restEventState(world,e.id).remaining<=30).map(e=>e.name).join('・')}を楽しめます。</p>
     {remaining>0?<><h2>あなたにも、ひとやすみ。</h2><div className="quiet-rituals">
       <div><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 22h23v10a10 10 0 0 1-10 8h-3a10 10 0 0 1-10-8zM33 24h3a5 5 0 0 1 0 10h-4M8 42h29M17 16c-6-5 5-7 0-12M26 16c-6-5 5-7 0-12"/></svg><span>お茶を淹れる</span></div>

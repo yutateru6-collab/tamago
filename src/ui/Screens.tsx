@@ -9,17 +9,21 @@ import { DecorCollection } from './DecorCollection';
 import { RestEvents } from './RestEvents';
 import type { RestEventId } from '../domain/restEvents';
 import { WorldPreview } from './WorldPreview';
+import { quietPlan } from '../domain/progress';
 
 type RestActions = { onAway: () => void; busy: boolean };
+function WorldPeek({world}:{world:World}) { return <details className="world-peek"><summary>いまの住処を見る</summary><WorldPreview world={world} compact/></details>; }
 export function Home({world, onAway, onSettings, onHabitat, onEvent, busy}: {world: World; onSettings: () => void; onHabitat: () => void; onEvent:(id:RestEventId)=>void} & RestActions) {
   const home = homeState(world);
   const resting = world.vitality < RULES.workThreshold;
   const firstProject = !world.quietSession && !resting && home.wear === 0 && !world.crafting && !world.built.includes('shelf') && world.inventory.wood >= 2;
+  const plan = firstProject ? { title:'最初は、小さな棚から。', detail:'棚を選んでから30分休むと、最初の30分で棚が半分まで進みます。' } : quietPlan(world);
   return <><Scene world={world} onSettings={onSettings}/><section className="paper home-paper">
     <LifeStatus world={world} compact/>
+    {firstProject && <aside className="first-project" aria-label="はじめての住処づくり"><div className="project-heading"><ProjectArt recipeId="shelf"/><div><span className="eyebrow">はじめての目標</span><h3>小さな棚を、つくってみよう。</h3><p>① 棚を選ぶ → ② 30分スマホを置く → ③ 戻ると半分まで進みます。</p></div></div><button className="secondary" disabled={busy} onClick={onHabitat}>最初の棚をつくる<ArrowRightIcon/></button></aside>}
+    <aside className="next-rest-plan" aria-label="次の30分の見通し"><strong>{plan.title}</strong><span>{plan.detail}</span></aside>
     <button className="primary" disabled={busy} onClick={onAway}><MoonIcon/>{world.quietSession ? 'お約束のつづきを見る' : '30分、協力する'}<ArrowRightIcon/></button>
     <p className="honesty-note">スマホを置いて、ひとやすみ。戻ったら「休めた」と伝えてね。<br/>自己申告のWeb版 · ほかのアプリの使用は計測しません</p>
-    {firstProject && <aside className="first-project" aria-label="はじめての住処づくり"><button className="text-link" disabled={busy} onClick={onHabitat}>集めた木で、小さな棚をつくろう</button></aside>}
     <RestEvents world={world} busy={busy} onEvent={onEvent} onAway={onAway}/>
     <details className="home-details"><summary>元気・持ちもの・暮らし方</summary>
       <div className="world-stats">{[{label:'この子の元気',value:world.vitality},{label:'住処の心地よさ',value:world.habitat}].map(s => <div key={s.label}><span>{s.label}<b>{Math.round(s.value)} / 100</b></span><meter min="0" max="100" value={s.value} aria-label={s.label}/></div>)}</div>
@@ -32,9 +36,9 @@ export function Home({world, onAway, onSettings, onHabitat, onEvent, busy}: {wor
 }
 
 export function Explore({world, travel, onAway, busy}: {world: World; travel: (id: string) => void} & RestActions) {
-  return <section className="paper inner-screen"><p className="eyebrow">この子の、小さな冒険</p><h1>探索</h1>
-    <WorldPreview world={world}/>
+  return <section className="paper inner-screen"><p className="eyebrow">この子の、小さな冒険</p><h1 tabIndex={-1}>探索</h1>
     <p className="intro">欲しい材料から、行き先を選ぼう。<br/>選んだあとは、30分のお約束へ。</p>
+    <WorldPeek world={world}/>
     {(world.crafting || homeState(world).wear > 0 || world.vitality < RULES.workThreshold) && <p className="journey-notice">元気の回復・お手入れ・制作があるときは、そちらが先。残った休息時間で探索が進みます。</p>}
     {DESTINATIONS.map((d, i) => <article className={`choice-card ${world.destination === d.id ? 'selected' : ''}`} key={d.id}>
       <span className="eyebrow">小さな冒険 {String(i + 1).padStart(2, '0')}{world.destination === d.id ? ' · 次の行き先に選択中' : ''}</span><h2>{d.name}</h2><p>{d.description}</p>
@@ -48,9 +52,9 @@ export function Explore({world, travel, onAway, busy}: {world: World; travel: (i
 }
 export function Habitat({world, craft, arrange, onAway, onExplore, busy}: {world: World; craft: (id: string) => void; arrange:(id:string,slot:string|null)=>void; onExplore: () => void} & RestActions) {
   const home = homeState(world);
-  return <section className="paper inner-screen"><p className="eyebrow">拾ったものに、もう一度いのちを</p><h1>住処づくり</h1>
-    <WorldPreview world={world}/>
+  return <section className="paper inner-screen"><p className="eyebrow">拾ったものに、もう一度いのちを</p><h1 tabIndex={-1}>住処づくり</h1>
     <p className="intro">つくるものを選んだら、ひとやすみ。<br/>戻ったときに、できたぶんだけ暮らしが育ちます。</p>
+    <WorldPeek world={world}/>
     {home.wear > 0 && <aside className="journey-notice" aria-label="住処のお手入れ"><h2>また、飾れるように。</h2><p>つくったものは消えていません。元気が戻ると、制作より先にお手入れが進みます。修繕に材料は使いません。</p><button className="secondary" disabled={busy} onClick={onAway}>お手入れのために休む</button></aside>}
     <div className="inventory" aria-label="持ちもの">{Object.entries(world.inventory).map(([k, n]) => <span key={k}>{MATERIAL_NAMES[k as Material]}<strong>{n}</strong></span>)}</div>
     {RECIPES.map(r => {
@@ -70,8 +74,8 @@ export function Habitat({world, craft, arrange, onAway, onExplore, busy}: {world
     })}<p className="muted">制作と探索は、ひとつずつ。材料は制作を始めるときだけ使います。休息のお約束をやめても、制作の進み具合は残ります。</p><DecorCollection world={world} arrange={arrange} busy={busy}/></section>;
 }
 export function Journal({world}: {world: World}) {
-  return <section className="paper inner-screen"><p className="eyebrow">この子と、積み重ねた日々</p><h1>成長の記録</h1>
-    <WorldPreview world={world}/>
+  return <section className="paper inner-screen"><p className="eyebrow">この子と、積み重ねた日々</p><h1 tabIndex={-1}>成長の記録</h1>
+    <WorldPeek world={world}/>
     <h2>思い出のアルバム</h2><p>発見も、できあがったものも、ここに。</p>
     {world.memories.length === 0 ? <article className="choice-card"><h3>はじまりの巣</h3><p>まだ何もない、小さな寝床。ここから暮らしが始まります。</p></article> : world.memories.map(m => <article className="memory" key={m.id}><span className="eyebrow">{m.kind === 'craft' ? 'ものづくり' : m.kind === 'growth' ? '成長' : m.kind === 'event' ? '一緒に過ごした時間' : '探索'}</span><h3>{m.title}</h3><p>{m.detail}</p></article>)}
   </section>;
