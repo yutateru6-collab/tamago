@@ -6,5 +6,5 @@ export default defineConfig({
   use: { baseURL: target || 'http://127.0.0.1:4175', viewport: { width: 1100, height: 1100 }, contextOptions:{reducedMotion:'reduce'}, trace: 'retain-on-failure', video: 'on', screenshot: 'only-on-failure' },
   projects: [{name:'chromium',use:{browserName:'chromium'}},{name:'webkit',use:{browserName:'webkit'}}],
   reporter: [['list'], ['html', { open: 'never' }]],
-  webServer: target ? undefined : { command: 'npm exec vite preview -- --host 127.0.0.1 --port 4175', url: 'http://127.0.0.1:4175', reuseExistingServer: false },
+  webServer: target ? undefined : { command: 'npm exec wrangler dev -- --ip 127.0.0.1 --port 4175 --inspector-port 0', url: 'http://127.0.0.1:4175', reuseExistingServer: false },
 });

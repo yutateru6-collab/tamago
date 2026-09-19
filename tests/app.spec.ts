@@ -1,6 +1,19 @@
 import { test, expect } from '@playwright/test';
 import { initialWorld } from '../src/domain/engine';
 
+test('published video supports metadata and resume byte ranges',async({request})=>{
+  const full=await request.get('/art/workshop-idle.mp4');
+  expect(full.status()).toBe(200);
+  const bytes=await full.body();
+  for(const [range,start,end] of [['bytes=0-1',0,1],['bytes=3749-',3749,bytes.length-1]] as const){
+    const partial=await request.get('/art/workshop-idle.mp4',{headers:{Range:range}});
+    expect(partial.status()).toBe(206);
+    expect(partial.headers()['content-range']).toBe(`bytes ${start}-${end}/${bytes.length}`);
+    expect(partial.headers()['content-length']).toBe(String(end-start+1));
+    expect(await partial.body()).toEqual(bytes.subarray(start,end+1));
+  }
+});
+
 test('first thirty minutes visibly advances the unfinished shelf',async({page})=>{
   await page.clock.setFixedTime(new Date('2026-09-18T00:00:00Z'));
   await page.goto('/');
@@ -92,7 +105,7 @@ test('original painting plays on home and quiet screen without legacy deformatio
   const video=page.getByLabel('工房の青い子の原画アニメ');
   await expect(page.locator('feDisplacementMap,.eyelids,.creature-motion')).toHaveCount(0);
   await expect(video).toHaveJSProperty('paused',false);
-  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
+  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime),{timeout:15000}).toBeGreaterThan(1);
   await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
   await expect(video).toHaveJSProperty('paused',false);
   await expect(page.locator('feDisplacementMap,.eyelids')).toHaveCount(0);
@@ -107,7 +120,10 @@ test('original painting plays on home and quiet screen without legacy deformatio
   await expect(video).toBeHidden();
   await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
   await expect(video).toHaveJSProperty('paused',false);
+  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
   await page.waitForTimeout(10500);
+  await expect(video).toHaveJSProperty('error',null);
+  await expect(video).toHaveJSProperty('paused',false);
 });
 
 test('original video can recover from a media load failure without changing progress',async({page})=>{
@@ -137,9 +153,13 @@ test('explicit play works when autoplay was rejected with motion already enabled
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.addInitScript(()=>{
     localStorage.setItem('tamago-character-motion','on');
+    // DOM inspection can itself grant transient userActivation in WebKit.
+    // Reject playback until an actual trusted pointer event reaches the page.
+    let clicked=false;
+    document.addEventListener('pointerdown',event=>{if(event.isTrusted)clicked=true;},true);
     const play=HTMLMediaElement.prototype.play;
     HTMLMediaElement.prototype.play=function(){
-      if(!navigator.userActivation.isActive)return Promise.reject(new DOMException('A gesture is required','NotAllowedError'));
+      if(!clicked)return Promise.reject(new DOMException('A gesture is required','NotAllowedError'));
       return play.call(this);
     };
   });

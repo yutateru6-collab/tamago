@@ -35,6 +35,7 @@ npm run dev
 ```sh
 npm test
 npm run check:runtime
+npm run check:worker
 npm run build
 npm run test:sites
 npm run test:app

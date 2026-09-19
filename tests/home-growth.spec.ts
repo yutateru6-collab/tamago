@@ -10,6 +10,8 @@ async function seed(page: import('@playwright/test').Page, name:string) {
 }
 
 test('same home, original motion, and only earned furniture at every stage',async({page},info)=>{
+  // Eight persisted scenes require sixteen navigations through the real Worker.
+  test.setTimeout(90000);
   await page.setViewportSize({width:390,height:844});
   for(const name of ['initial','half','shelf','finds','full','faded','damaged','empty']) {
     await seed(page,name);
@@ -19,7 +21,7 @@ test('same home, original motion, and only earned furniture at every stage',asyn
     await expect(page.locator('[data-decor="shelf"]')).toHaveCount(name==='initial'?0:1);
     await expect(page.locator('[data-decor="hammock"]')).toHaveCount(['full','faded','damaged','empty'].includes(name)?1:0);
     await expect(page.locator('[data-decor="field-notes"]')).toHaveCount(['finds','full','faded','damaged','empty'].includes(name)?1:0);
-    await expect.poll(()=>page.locator('.scene img').evaluateAll(imgs=>imgs.every(img=>(img as HTMLImageElement).complete&&(img as HTMLImageElement).naturalWidth>0))).toBe(true);
+    await expect.poll(()=>page.locator('.scene img').evaluateAll(imgs=>imgs.every(img=>(img as HTMLImageElement).complete&&(img as HTMLImageElement).naturalWidth>0)),{timeout:15000}).toBe(true);
     await page.evaluate(()=>document.fonts.ready);
     await page.screenshot({path:`test-results/visual/${info.project.name}-living-${name}.png`});
   }
