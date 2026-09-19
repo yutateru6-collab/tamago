@@ -2,6 +2,7 @@ import { DESTINATIONS, RECIPES, RULES } from './catalog.js';
 import type { ActivityWindow, Condition, Material, Memory, World } from './model.js';
 import { homeState, repairHome, wearHome } from './home.js';
 import { describeQuietProgress } from './progress.js';
+import { creditRestEvents, newlyAvailableEvents } from './restEvents.js';
 
 export const conditionOf = (world: World): Condition => Math.min(world.vitality, world.habitat) < 30 ? 'weary' : Math.min(world.vitality, world.habitat) < 70 ? 'recovering' : 'thriving';
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
@@ -95,8 +96,9 @@ export function completeQuiet(original: World, now = Date.now()): World {
   const session = original.quietSession;
   if (!session || now < session.endsAt) throw new Error('お約束の30分が終わるまで、もう少し。');
   // Explicit user confirmation, not inferred OS activity. Apply once in the same saved transaction.
-  const world = applyActivity(original, [{ id: session.id, start: original.processedUntil, end: original.processedUntil + 30 * 60000, kind: 'away', evidence: 'self-report' }]);
+  const world = creditRestEvents(applyActivity(original, [{ id: session.id, start: original.processedUntil, end: original.processedUntil + 30 * 60000, kind: 'away', evidence: 'self-report' }]),30);
   world.quietSession = null;
-  remember(world, { id: session.id, at: now, kind: 'growth', title: '30分、そっと見守ってくれた。', detail: describeQuietProgress(original, world) });
+  const invitations = newlyAvailableEvents(original,world).map(e=>e.name).join('・');
+  remember(world, { id: session.id, at: now, kind: 'growth', title: '30分、そっと見守ってくれた。', detail: `${describeQuietProgress(original, world)}${invitations ? `\n${invitations}を楽しめるようになりました。ホームの「休んだあとの、お楽しみ」へ。` : ''}` });
   return world;
 }

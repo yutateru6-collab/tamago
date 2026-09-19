@@ -73,6 +73,51 @@ test('quiet promise: wait, confirm once, and preserve old saves', async () => {
 import { DECOR, decorState, arrangeDecor } from '../.test-build/domain/decor.js';
 import { sandboxPreset, sandboxRest } from '../.test-build/domain/sandbox.js';
 import { isWorld, SANDBOX_KEY } from '../.test-build/platform/storage.js';
+import { REST_EVENTS, restEventState, enjoyRestEvent } from '../.test-build/domain/restEvents.js';
+import { beginQuiet, completeQuiet } from '../.test-build/domain/engine.js';
+test('only confirmed rest earns events, including recovery; no cancel, unknown or usage rewards',()=>{
+  const original={...initialWorld(1000),vitality:0};
+  const pending=beginQuiet(original,1000);
+  assert.throws(()=>completeQuiet(pending,1800999));
+  assert.equal(restEventState(pending,'snack').available,0);
+  assert.equal(restEventState({...pending,quietSession:null},'snack').available,0);
+  for(const kind of ['unknown','usage','away']) assert.equal(restEventState(applyActivity(original,[windowOf(1000,120,kind)]),'snack').available,0);
+  const done=completeQuiet(pending,1801000);
+  assert.equal(done.restEvents.minutes,30);
+  assert.equal(done.expeditionMinutes,0);
+  assert.equal(restEventState(done,'snack').available,1);
+  assert.equal(restEventState(done,'tea').remaining,30);
+  assert.throws(()=>completeQuiet(done,1801000));
+  assert.equal(original.restEvents,undefined);
+});
+test('30/60/120 minute invitations accumulate independently, persist, and use exactly once per request',()=>{
+  let world=initialWorld(0);
+  for(let i=1;i<=4;i++) {
+    world=completeQuiet(beginQuiet(world,i*1800000), (i+1)*1800000);
+    for(const event of REST_EVENTS) assert.equal(restEventState(world,event.id).available,Math.floor(i*30/event.minutes));
+  }
+  const before=structuredClone(world);
+  const enjoyed=enjoyRestEvent(world,'picnic',0,1234);
+  assert.deepEqual(world,before);
+  assert.equal(restEventState(enjoyed,'picnic').available,0);
+  assert.equal(restEventState(enjoyed,'snack').available,4);
+  for(const key of ['inventory','built','vitality','habitat','growthMinutes','expeditionCount']) assert.deepEqual(enjoyed[key],before[key]);
+  assert.throws(()=>enjoyRestEvent(enjoyed,'picnic',0));
+  const snack=enjoyRestEvent(enjoyed,'snack',0);
+  assert.throws(()=>enjoyRestEvent(snack,'snack',0));
+  assert.equal(restEventState(enjoyRestEvent(snack,'snack',1),'snack').available,2);
+  const r=new WorldRepository(storage());r.save(snack,0);
+  assert.equal(restEventState(r.load(),'snack').available,3);
+  assert.equal(r.load().memories.filter(m=>m.kind==='event').length,2);
+  assert.throws(()=>enjoyRestEvent(initialWorld(0),'snack',0));
+  assert.throws(()=>enjoyRestEvent(world,'missing',0));
+});
+test('event storage accepts legacy saves and rejects impossible or malformed balances',()=>{
+  const base=initialWorld(0);
+  assert.equal(isWorld(base),true);
+  for(const events of [{minutes:NaN,enjoyed:{}},{minutes:1,enjoyed:{}},{minutes:30,enjoyed:[]},{minutes:30,enjoyed:{snack:2}},{minutes:30,enjoyed:{tea:1}},{minutes:30,enjoyed:{snack:-1}},{minutes:30,enjoyed:{unknown:0}}]) assert.equal(isWorld({...base,restEvents:events}),false);
+  for(const name of ['rest30','rest60','rest120']) assert.equal(isWorld(sandboxPreset(name)),true);
+});
 test('a recipe becomes one object; discoveries require a shelf, and extension uses only a definition',()=>{
   const initial=initialWorld(0), shelf=DECOR.find(i=>i.id==='shelf');
   assert.equal(decorState(initial,shelf).visible,false);

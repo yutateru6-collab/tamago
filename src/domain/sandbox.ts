@@ -9,6 +9,11 @@ export function sandboxPreset(name: string): World {
   const initial = initialWorld();
   const advance = (w: World, minutes: number) => applyActivity(w,[{id:`preview:${w.processedUntil}`,start:w.processedUntil,end:w.processedUntil+minutes*60000,kind:'away',evidence:'demo'}]);
   if (name === 'initial') return initial;
+  if (['rest30','rest60','rest120'].includes(name)) {
+    let world = initial;
+    for (let i=0;i<Number(name.slice(4))/30;i++) world = sandboxRest(world);
+    return world;
+  }
   if (name === 'half') return advance(startCraft(initial,'shelf'),30);
   const shelf = advance(startCraft(initial,'shelf'),60);
   if (name === 'shelf') return shelf;
