@@ -12,10 +12,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Archive tracked source only
-        run: git archive --format=zip HEAD -o /tmp/tamago-source.zip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Archive dependencies without credentials or git metadata
+        run: tar -czf /tmp/tamago-dependencies.tar.gz node_modules
       - uses: actions/upload-artifact@v4
         with:
-          name: tamago-source-workspace
-          path: /tmp/tamago-source.zip
+          name: tamago-dependencies-workspace
+          path: /tmp/tamago-dependencies.tar.gz
           retention-days: 1
