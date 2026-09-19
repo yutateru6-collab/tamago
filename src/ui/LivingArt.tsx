@@ -13,7 +13,7 @@ const HOME_GROWTH_ART: Record<Exclude<HomeGrowthStage, 0>, {src:string; alt:stri
 export function LivingArt({world, homeProgression=false}: {world:World; homeProgression?:boolean}) {
   const growth = homeProgression ? homeGrowthStage(world) : 0;
   if (growth > 0) {
-    const art = HOME_GROWTH_ART[growth];
+    const art = HOME_GROWTH_ART[growth as Exclude<HomeGrowthStage, 0>];
     return <div className="living-art painted-art home-growth-art-stage" data-motion="still" data-home-growth-stage={growth}>
       <img className="home-growth-art" src={art.src} alt={art.alt}/>
     </div>;
