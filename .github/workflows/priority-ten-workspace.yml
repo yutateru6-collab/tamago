@@ -1,0 +1,21 @@
+name: Priority ten workspace
+on:
+  push:
+    branches: ['feat/priority-ten-20260919']
+    paths: ['.github/workflows/priority-ten-workspace.yml']
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Archive tracked source only
+        run: git archive --format=zip HEAD -o /tmp/tamago-source.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tamago-source-workspace
+          path: /tmp/tamago-source.zip
+          retention-days: 1
