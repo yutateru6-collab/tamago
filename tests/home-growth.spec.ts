@@ -97,7 +97,7 @@ test('normal play builds the shelf, adds only earned keepsakes and survives relo
   const start=Date.UTC(2026,8,19);
   await page.clock.setFixedTime(new Date(start));
   await page.goto('/');
-  await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).click();
+  await page.getByRole('button',{name:'最初の棚をつくる'}).click();
   await page.getByRole('button',{name:'これをつくろう',exact:true}).click();
   for(let step=1;step<=6;step++) {
     await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
