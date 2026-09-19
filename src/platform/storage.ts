@@ -2,6 +2,7 @@ import type { Material, World } from '../domain/model.js';
 import { DESTINATIONS, RECIPES } from '../domain/catalog.js';
 import { DECOR } from '../domain/decor.js';
 import { REST_EVENTS } from '../domain/restEvents.js';
+import { MAX_MEMORIES } from '../domain/memories.js';
 export const STORAGE_KEY = 'tamago.world.v1';
 export const SANDBOX_KEY = 'tamago.sandbox.v1';
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
@@ -22,9 +23,29 @@ export function isWorld(v: unknown): v is World {
     && Array.isArray(w.built) && new Set(w.built).size === w.built.length && w.built.every(id => RECIPES.some(r => r.id === id))
     && (w.crafting === null || (!!w.crafting && RECIPES.some(r => r.id === w.crafting!.recipeId && finite(w.crafting!.minutes) && w.crafting!.minutes < r.minutes) && !w.built.includes(w.crafting.recipeId)))
     && (w.quietSession == null || (typeof w.quietSession.id === 'string' && typeof w.quietSession.purpose === 'string' && Number.isSafeInteger(w.quietSession.startedAt) && w.quietSession.startedAt >= 0 && w.quietSession.endsAt === w.quietSession.startedAt + 1800000))
-    && Array.isArray(w.memories) && w.memories.length <= 100 && w.memories.every(m => !!m && typeof m.id === 'string' && typeof m.title === 'string' && typeof m.detail === 'string' && finite(m.at) && ['craft','discovery','growth','event'].includes(m.kind))
+    && Array.isArray(w.memories) && w.memories.length <= MAX_MEMORIES && w.memories.every(m => !!m && typeof m.id === 'string' && typeof m.title === 'string' && typeof m.detail === 'string' && finite(m.at) && ['craft','discovery','growth','event'].includes(m.kind))
     && Array.isArray(w.seenMemoryIds) && w.seenMemoryIds.every(id => typeof id === 'string');
 }
+export const MAX_BACKUP_BYTES = 1_000_000;
+type WorldBackup = { format: 'tamago-backup'; version: 1; exportedAt: number; world: World };
+
+export function createBackup(world: World, now = Date.now()): string {
+  const backup: WorldBackup = { format: 'tamago-backup', version: 1, exportedAt: now, world };
+  return JSON.stringify(backup, null, 2);
+}
+
+export function parseBackup(raw: string): World {
+  if (new TextEncoder().encode(raw).byteLength > MAX_BACKUP_BYTES) throw new Error('バックアップが大きすぎます。1MB未満のファイルを選んでください。');
+  let value: unknown;
+  try { value = JSON.parse(raw); } catch { throw new Error('バックアップを読めません。JSONファイルを確認してください。'); }
+  if (!value || typeof value !== 'object') throw new Error('tamagoのバックアップではありません。');
+  const backup = value as Partial<WorldBackup> & { version?: unknown };
+  if (backup.format !== 'tamago-backup') throw new Error('tamagoのバックアップではありません。');
+  if (backup.version !== 1) throw new Error('このバックアップの版にはまだ対応していません。現在の記録は変更していません。');
+  if (!Number.isSafeInteger(backup.exportedAt) || (backup.exportedAt as number) < 0 || !isWorld(backup.world)) throw new Error('バックアップの内容を確認できません。現在の記録は変更していません。');
+  return structuredClone(backup.world);
+}
+
 export class WorldRepository {
   constructor(private readonly storage: StorageLike, private readonly key = STORAGE_KEY) {}
   load(): World | null {
