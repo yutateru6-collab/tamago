@@ -37,6 +37,7 @@ test('rest event: real thirty minute confirmation unlocks food; postpone, enjoy 
   await expect(page.getByRole('dialog',{name:'木の実のおやつ',exact:true})).toHaveCSS('transform','none');
   await page.getByRole('button',{name:'おやつを分ける'}).click();
   await expect(page.getByRole('status')).toContainText('器は空っぽ');
+  await expect(page.locator('.event-reaction')).toBeVisible();
   await page.screenshot({path:`test-results/visual/${info.project.name}-snack-done.png`});
   await page.getByRole('button',{name:'住処へ戻る',exact:true}).click();
   await expect(page.locator('[data-rest-event="snack"]')).toContainText('あと30分');
