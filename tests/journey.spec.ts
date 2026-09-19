@@ -55,7 +55,7 @@ test('journey: choose furniture, resume from habitat, see saved fifty percent af
   await page.setViewportSize({width:390,height:844});
   await page.clock.setFixedTime(new Date(start));
   await page.goto('/');
-  await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).click();
+  await page.getByRole('button',{name:'最初の棚をつくる'}).click();
   await expect(page.locator('[data-recipe="shelf"]')).toContainText('そろった');
   await shot(page, `test-results/visual/${testInfo.project.name}-journey-390-furniture.png`);
   await page.getByRole('button',{name:'これをつくろう',exact:true}).click();
@@ -108,10 +108,10 @@ test('320px and 430px journey cards fit and expose the real next action', async 
   for (const width of [320,430]) {
     await page.setViewportSize({width,height:width === 320 ? 568 : 844});
     await page.goto('/');
-    await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).scrollIntoViewIfNeeded();
+    await page.getByRole('button',{name:'最初の棚をつくる'}).scrollIntoViewIfNeeded();
     await shot(page, `test-results/visual/${testInfo.project.name}-journey-${width}-guide.png`);
     expect(await page.locator('.first-project').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
-    await page.getByRole('button',{name:'集めた木で、小さな棚をつくろう'}).click();
+    await page.getByRole('button',{name:'最初の棚をつくる'}).click();
     await page.locator('[data-recipe="shelf"]').scrollIntoViewIfNeeded();
     expect(await page.locator('[data-recipe="shelf"]').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     await shot(page, `test-results/visual/${testInfo.project.name}-journey-${width}-furniture.png`);
