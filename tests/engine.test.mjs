@@ -73,6 +73,15 @@ test('backup round-trip is validated and rejects corrupt, future and oversized f
   assert.throws(()=>parseBackup('x'.repeat(1_000_001)),/大きすぎます/);
 });
 
+test('next thirty-minute plan distinguishes recovery, repair, crafting and exploration',async()=>{
+  const { quietPlan }=await import('../.test-build/domain/progress.js');
+  assert.match(quietPlan({...initialWorld(0),vitality:0}).title,/回復/);
+  assert.match(quietPlan({...initialWorld(0),homeCare:{wear:15,day:'2026-09-19',dailyWear:0}}).title,/お手入れ/);
+  assert.match(quietPlan(startCraft(initialWorld(0),'shelf')).detail,/完成まで約2回/);
+  assert.match(quietPlan(initialWorld(0)).detail,/次の拾い物まで約2回/);
+});
+
+
 
 test('quiet promise: wait, confirm once, and preserve old saves', async () => {
   const { beginQuiet, completeQuiet } = await import('../.test-build/domain/engine.js');
