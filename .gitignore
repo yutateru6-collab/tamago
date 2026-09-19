@@ -4,3 +4,5 @@ test-results/
 playwright-report/
 
 .test-build/
+.wrangler/
+worker-configuration.d.ts

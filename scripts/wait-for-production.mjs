@@ -6,6 +6,7 @@ import { setTimeout as pause } from 'node:timers/promises';
 const target = new URL(process.env.APP_BASE_URL || 'https://tamago.itisnowornever271.workers.dev/');
 if (target.protocol !== 'https:') throw new Error('Production verification requires HTTPS');
 const local = await readFile('dist/client/index.html', 'utf8');
+const video = await readFile('dist/client/art/workshop-idle.mp4');
 const entries = [...local.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map(match => match[1]);
 if (!entries.length) throw new Error('No built entry assets found; refusing an empty deployment check');
 const end = Date.now() + 300000;
@@ -26,7 +27,16 @@ while (Date.now() < end) {
         const expected = await readFile(`dist/client/${path}`);
         if (!remote.equals(expected)) throw new Error(`Entry asset differs from this build: ${entry}`);
       }
-      console.log(`Verified current JavaScript and CSS at ${target.origin}: ${entries.join(', ')}`);
+      // Server-only changes leave the entry hashes unchanged. Also wait for the
+      // video delivery route so CI cannot race the new Worker deployment.
+      const media = await fetch(new URL('/art/workshop-idle.mp4', target), {
+        headers: { Range: 'bytes=0-1', 'Cache-Control': 'no-cache' }, signal: AbortSignal.timeout(10000),
+      });
+      if (media.status !== 206 || media.headers.get('Content-Range') !== `bytes 0-1/${video.length}` ||
+          !Buffer.from(await media.arrayBuffer()).equals(video.subarray(0, 2))) {
+        throw new Error('Video byte-range delivery is not deployed yet');
+      }
+      console.log(`Verified current JavaScript, CSS and video range delivery at ${target.origin}: ${entries.join(', ')}`);
       process.exit(0);
     }
     detail = `HTTP ${response.status}; waiting for ${missing.join(', ')}`;

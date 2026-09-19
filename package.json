@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "check:runtime": "node scripts/check-mobile-runtime.mjs",
+    "check:worker": "wrangler types && tsc -p tsconfig.worker.json",
     "update:runtime-lock": "node scripts/update-mobile-runtime-lock.mjs",
     "test:runtime": "playwright test",
     "test:sites": "node --test tests/sites-worker.test.mjs",
@@ -12,7 +13,7 @@
     "dev": "vite",
     "prebuild": "npm run check:runtime",
     "build": "tsc && vite build && node scripts/prepare-sites-build.mjs",
-    "test": "tsc -p tsconfig.engine.json && node --test tests/engine.test.mjs",
+    "test": "tsc -p tsconfig.engine.json && node --test tests/engine.test.mjs tests/video-worker.test.mjs",
     "test:app": "playwright test -c playwright.app.config.ts"
   },
   "dependencies": {
