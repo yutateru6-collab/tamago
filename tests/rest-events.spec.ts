@@ -32,6 +32,9 @@ test('rest event: real thirty minute confirmation unlocks food; postpone, enjoy 
   await page.getByRole('button',{name:'またあとで楽しむ'}).click();
   await page.reload();
   await page.getByRole('button',{name:'木の実のおやつを楽しむ'}).click();
+  // WebKit can scroll the moving sheet between pointer-down and pointer-up.
+  // Wait for the actual entrance to finish before testing the event transaction.
+  await expect(page.getByRole('dialog',{name:'木の実のおやつ',exact:true})).toHaveCSS('transform','none');
   await page.getByRole('button',{name:'おやつを分ける'}).click();
   await expect(page.getByRole('status')).toContainText('器は空っぽ');
   await page.screenshot({path:`test-results/visual/${info.project.name}-snack-done.png`});
