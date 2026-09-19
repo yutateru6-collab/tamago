@@ -1,0 +1,26 @@
+name: Prepare review workspace
+on:
+  push:
+    branches: [feature/living-home-sandbox]
+    paths: [.github/workflows/local-review-workspace.yml]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Pack source and public dependencies for local visual review
+        run: tar --exclude='./.git' -czf /tmp/tamago-review-workspace.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tamago-review-workspace
+          path: /tmp/tamago-review-workspace.tar.gz
+          retention-days: 1
