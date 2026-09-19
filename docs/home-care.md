@@ -16,3 +16,14 @@
 承認済みの原画動画は変更しない。右側の家具領域に家具なしの背景を重ね、棚・宝物・鉢植え・寝床を独立した透過素材で描く。動画の再生状態は進行に影響しない。
 
 画像はbuilt-in image_genで原画を参照して生成。`public/art/home-empty.jpg`、`home-shelf.webp`、`home-treasure.webp`、`home-plant.webp`、`home-plant-wilt.webp`、`home-hammock.webp`。配信時の圧縮・縮小はffmpegを使用し、透過素材のalphaを保持する。
+
+
+## 良い方向の住処の発展 — 2026-09-19
+現在の `workshop-idle.jpg/mp4` を発展前のホームとして維持する。住処が `warm` のとき、完成した既存家具（棚・寝床・小さな庭）の数に応じて、承認済みの全景画像へ切り替える。
+
+- 0個: 現在の原画アニメ。制作途中の家具レイヤーもここで見せる。
+- 1個: `home-growth-1.avif`
+- 2個: `home-growth-2.avif`
+- 3個: `home-growth-3.avif`
+
+これは見た目だけの段階で、報酬・制作費・時間・保存形式は変えない。傷みが20以上になったら既存の faded/damaged/empty 表現を優先する。完成済みIDは消さないため、修繕して warm に戻れば同じ発展段階へ復帰する。

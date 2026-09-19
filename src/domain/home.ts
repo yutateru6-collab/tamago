@@ -15,6 +15,16 @@ export function homeState(world: World) {
     dailyLimitReached: (world.homeCare?.dailyWear ?? 0) >= HOME_RULES.dailyLimit,
   };
 }
+
+export type HomeGrowthStage = 0 | 1 | 2 | 3;
+const HOME_GROWTH_IDS = new Set(['shelf', 'hammock', 'garden']);
+/** Positive home art follows durable completed furnishings only.
+ * Deterioration always takes visual precedence without deleting those achievements. */
+export function homeGrowthStage(world: World): HomeGrowthStage {
+  if (homeState(world).stage !== 'warm') return 0;
+  const built = new Set(world.built.filter(id => HOME_GROWTH_IDS.has(id))).size;
+  return Math.min(3, built) as HomeGrowthStage;
+}
 export function wearHome(world: World, minutes: number, at: number): number {
   const day = homeDay(at);
   const previous = world.homeCare ?? { wear: 0, day, dailyWear: 0 };
