@@ -109,3 +109,46 @@ test('original painting plays on home and quiet screen without legacy deformatio
   await expect(video).toHaveJSProperty('paused',false);
   await page.waitForTimeout(10500);
 });
+
+test('original video can recover from a media load failure without changing progress',async({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.addInitScript(world=>localStorage.setItem('tamago.world.v1',JSON.stringify(world)),initialWorld());
+  await page.goto('/');
+  const video=page.getByLabel('工房の青い子の原画アニメ');
+  await expect(video).toHaveJSProperty('paused',false);
+  // WebKit's native media loader can bypass Playwright routing. Give the real
+  // decoder an invalid source so both engines produce an actual media error.
+  await video.evaluate((v:HTMLVideoElement)=>{v.src='data:video/mp4;base64,AA==';v.load();});
+  const retry=page.getByRole('button',{name:'キャラの動画を読み直して再生する'});
+  await expect(retry).toBeVisible();
+  await expect(video).toBeHidden();
+  const before=await page.evaluate(()=>localStorage.getItem('tamago.world.v1'));
+  await video.evaluate((v:HTMLVideoElement)=>{v.src='/art/workshop-idle.mp4';});
+  await retry.click();
+  await expect(video).toBeVisible();
+  await expect(video).toHaveJSProperty('paused',false);
+  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
+  await page.getByRole('button',{name:'キャラの動きを止める'}).click();
+  await expect(video).toHaveJSProperty('paused',true);
+  expect(await page.evaluate(()=>localStorage.getItem('tamago.world.v1'))).toBe(before);
+});
+
+test('explicit play works when autoplay was rejected with motion already enabled',async({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.addInitScript(()=>{
+    localStorage.setItem('tamago-character-motion','on');
+    const play=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(){
+      if(!navigator.userActivation.isActive)return Promise.reject(new DOMException('A gesture is required','NotAllowedError'));
+      return play.call(this);
+    };
+  });
+  await page.goto('/');
+  const video=page.getByLabel('工房の青い子の原画アニメ');
+  await expect(video).toHaveJSProperty('paused',true);
+  await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
+  await expect(video).toHaveJSProperty('paused',false);
+  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
+  await page.getByRole('button',{name:'キャラの動きを止める'}).click();
+  await expect(video).toHaveJSProperty('paused',true);
+});
