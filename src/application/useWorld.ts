@@ -45,6 +45,7 @@ export function useWorld(sandbox = false) {
     reportUsage: () => transact(w => applyActivity(w, [{ id: `usage:${Date.now()}`, start: w.processedUntil, end: w.processedUntil + 30 * 60000, kind: 'usage', evidence: 'self-report', recordedAt: Date.now() }])),
     craft: (id: string) => transact(w => startCraft(w, id)),
     travel: (id: string) => transact(w => chooseDestination(w, id)),
+    restore: (backup: World) => transact(() => ({ ...structuredClone(backup), quietSession: null })),
     acknowledge: () => transact(w => ({ ...w, seenMemoryIds: w.memories.map(m => m.id) })),
   };
 }
