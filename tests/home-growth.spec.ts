@@ -7,9 +7,9 @@ test('home grows from the current scene through the three approved richer images
   const base={...initialWorld(Date.UTC(2026,8,19)),vitality:100,habitat:100,homeCare:{wear:0,day:'2026-09-19',dailyWear:0}};
   const cases=[
     {built:[],stage:0,src:'/art/workshop-idle.jpg'},
-    {built:['shelf'],stage:1,src:'/art/home-growth-1.png'},
-    {built:['shelf','hammock'],stage:2,src:'/art/home-growth-2.png'},
-    {built:['shelf','hammock','garden'],stage:3,src:'/art/home-growth-3.png'},
+    {built:['shelf'],stage:1,src:'/art/home-growth-1.avif'},
+    {built:['shelf','hammock'],stage:2,src:'/art/home-growth-2.avif'},
+    {built:['shelf','hammock','garden'],stage:3,src:'/art/home-growth-3.avif'},
   ] as const;
   for (const item of cases) {
     await page.evaluate(w=>localStorage.setItem('tamago.world.v1',JSON.stringify(w)),{...base,built:[...item.built]});

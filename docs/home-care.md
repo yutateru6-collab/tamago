@@ -22,8 +22,8 @@
 現在の `workshop-idle.jpg/mp4` を発展前のホームとして維持する。住処が `warm` のとき、完成した既存家具（棚・寝床・小さな庭）の数に応じて、承認済みの全景画像へ切り替える。
 
 - 0個: 現在の原画アニメ。制作途中の家具レイヤーもここで見せる。
-- 1個: `home-growth-1.png`
-- 2個: `home-growth-2.png`
-- 3個: `home-growth-3.png`
+- 1個: `home-growth-1.avif`
+- 2個: `home-growth-2.avif`
+- 3個: `home-growth-3.avif`
 
 これは見た目だけの段階で、報酬・制作費・時間・保存形式は変えない。傷みが20以上になったら既存の faded/damaged/empty 表現を優先する。完成済みIDは消さないため、修繕して warm に戻れば同じ発展段階へ復帰する。

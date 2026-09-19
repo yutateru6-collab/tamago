@@ -5,9 +5,9 @@
 | 段階 | 条件（住処がwarmのとき） | 表示 |
 | --- | --- | --- |
 | 0 | 完成家具0 | 現行 `workshop-idle.jpg/mp4` |
-| 1 | 完成家具1 | `/art/home-growth-1.png` |
-| 2 | 完成家具2 | `/art/home-growth-2.png` |
-| 3 | 完成家具3 | `/art/home-growth-3.png` |
+| 1 | 完成家具1 | `/art/home-growth-1.avif` |
+| 2 | 完成家具2 | `/art/home-growth-2.avif` |
+| 3 | 完成家具3 | `/art/home-growth-3.avif` |
 
 段階1〜3は、家具・本・花・灯り・寝床などが明確に増え、キャラも目を開けてこちらを見るなど、暮らしが豊かになったことを全景で伝える。画像に含まれる家具はビジュアル表現であり、domainの持ち物や報酬を追加しない。
 

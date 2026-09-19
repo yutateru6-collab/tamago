@@ -100,6 +100,6 @@ Keep progression rates, crafting costs, daily wear caps, self-report boundaries 
 
 
 ## Approved home growth artwork — 2026-09-19
-The current animated workshop/waterfall scene is the untouched default home (growth stage 0). The user approved three specific richer home illustrations using the same teal long-eared companion: `/art/home-growth-1.png`, `home-growth-2.png`, and `home-growth-3.png`. When the home is warm, show stage 1 after one completed furnishing, stage 2 after two, and stage 3 after all three existing furnishings. Do not substitute a different creature or regenerate these approved images.
+The current animated workshop/waterfall scene is the untouched default home (growth stage 0). The user approved three specific richer home illustrations using the same teal long-eared companion: `/art/home-growth-1.avif`, `home-growth-2.avif`, and `home-growth-3.avif`. When the home is warm, show stage 1 after one completed furnishing, stage 2 after two, and stage 3 after all three existing furnishings. Do not substitute a different creature or regenerate these approved images.
 
 Home deterioration takes visual precedence over positive growth art: at faded/damaged/empty wear stages, return to the existing state-driven deterioration layers. Completed furnishing IDs remain saved, so repairing the home reveals the appropriate positive growth stage again. This is presentation logic only; do not change crafting costs, rest/usage rates, daily wear caps, or reward rules.

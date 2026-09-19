@@ -10,7 +10,7 @@ test('layered home: deterioration, preserved achievements, repair and visual sta
     await page.reload();
     if (wear === 0) {
       await expect(page.locator('[data-home-growth-stage="3"]')).toBeVisible();
-      await expect(page.locator('.home-growth-art')).toHaveAttribute('src','/art/home-growth-3.png');
+      await expect(page.locator('.home-growth-art')).toHaveAttribute('src','/art/home-growth-3.avif');
       await expect(page.locator('.habitat-layers')).toHaveCount(0);
     } else {
       await expect(page.locator('.habitat-layers')).toHaveAttribute('data-home-stage',stage);
@@ -67,7 +67,7 @@ test('painted companion keeps the approved base motion and switches to approved 
   await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
   await page.getByRole('button',{name:'住処をのぞく'}).click();
   await expect(page.locator('[data-home-growth-stage="1"]')).toBeVisible();
-  await expect(page.locator('.home-growth-art')).toHaveAttribute('src','/art/home-growth-1.png');
+  await expect(page.locator('.home-growth-art')).toHaveAttribute('src','/art/home-growth-1.avif');
   await expect(page.getByLabel('工房の青い子の原画アニメ')).toHaveCount(0);
   await expect(page.locator('.life-keepsakes')).toContainText('宝物の小さな棚');
   await page.reload();
