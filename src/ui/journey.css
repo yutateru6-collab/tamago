@@ -74,3 +74,16 @@
   .tamago .inner-screen .inventory { grid-template-columns:1fr 1fr; }
   .tamago .world-preview.compact { width:min(100%,140px); }
 }
+
+
+/* TAM-005/007: safe settings actions and local backup controls. */
+.settings-sections>section { padding:4px 0 18px; border-bottom:1px solid #8d845f33; }
+.settings-sections>section+section { padding-top:12px; }
+.settings-sections .file-button { position:relative; margin-top:10px; cursor:pointer; }
+.settings-sections .file-button input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.settings-sections .file-button:focus-within { outline:3px solid #a87629; outline-offset:3px; }
+.settings-sections .usage-confirm,
+.settings-sections .restore-confirm { margin-top:12px; padding:13px; border:1px solid #aa976b66; border-radius:12px; background:#fff9e95e; }
+.settings-sections .usage-confirm p,
+.settings-sections .restore-confirm p { margin:0 0 8px; font-size:13px; line-height:1.7; }
+.settings-sections .settings-status { margin:10px 0 0; padding:10px; border-radius:10px; background:#6d82501a; font-size:13px; line-height:1.7; }
