@@ -132,3 +132,23 @@ test('original video can recover from a media load failure without changing prog
   await expect(video).toHaveJSProperty('paused',true);
   expect(await page.evaluate(()=>localStorage.getItem('tamago.world.v1'))).toBe(before);
 });
+
+test('explicit play works when autoplay was rejected with motion already enabled',async({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.addInitScript(()=>{
+    localStorage.setItem('tamago-character-motion','on');
+    const play=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(){
+      if(!navigator.userActivation.isActive)return Promise.reject(new DOMException('A gesture is required','NotAllowedError'));
+      return play.call(this);
+    };
+  });
+  await page.goto('/');
+  const video=page.getByLabel('工房の青い子の原画アニメ');
+  await expect(video).toHaveJSProperty('paused',true);
+  await page.getByRole('button',{name:'キャラの動きを再生する'}).click();
+  await expect(video).toHaveJSProperty('paused',false);
+  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
+  await page.getByRole('button',{name:'キャラの動きを止める'}).click();
+  await expect(video).toHaveJSProperty('paused',true);
+});

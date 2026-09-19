@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCompanion } from './CompanionContext';
 
+function playVideo(element:HTMLVideoElement,onFailure:()=>void) {
+  if(element.paused)void element.play().catch(onFailure);
+}
+
 export function PaintedArt({children}: {children?: ReactNode}) {
   const companion=useCompanion();
   const video=useRef<HTMLVideoElement>(null);
@@ -26,21 +30,25 @@ export function PaintedArt({children}: {children?: ReactNode}) {
     let active=true;
     const update=()=>{
       if(running&&!document.hidden&&!failed) {
-        void element.play().catch(()=>{if(active)setPlaying(false);});
+        playVideo(element,()=>{if(active)setPlaying(false);});
       } else element.pause();
     };
     update();
     document.addEventListener('visibilitychange',update);
     window.addEventListener('pageshow',update);
-    return()=>{active=false;element.pause();document.removeEventListener('visibilitychange',update);window.removeEventListener('pageshow',update);};
+    // Preference changes keep the same element. Do not cancel the user's
+    // in-flight play request during effect cleanup; pause when stopped above.
+    return()=>{active=false;if(!element.isConnected)element.pause();document.removeEventListener('visibilitychange',update);window.removeEventListener('pageshow',update);};
   },[running,failed,companion.id]);
   const toggle=()=>{
     const next=videoFailed||!animated;
     if(videoFailed){video.current?.load();setFailed(false);}
     setChoice(next);
     try {localStorage.setItem('tamago-character-motion',next?'on':'off');}catch{/* Playback also works without storage. */}
-    // The effect starts playback after React reveals the video. Starting it here
-    // too races the previous effect's pause/cleanup while the video is hidden.
+    // Keep explicit playback in the gesture for browsers that reject autoplay.
+    // Reveal the element first; the effect sees it playing and leaves it alone.
+    const element=video.current;
+    if(next&&element){element.hidden=false;playVideo(element,()=>setPlaying(false));}
   };
   return <div className="living-art painted-art" data-motion={animated?'playing':'paused'} data-companion={companion.id}>
     <img className="scene-art" src="/art/home-room.webp" alt="滝と木漏れ日、小さな灯り。これから暮らしをつくる住処。"/>
