@@ -55,6 +55,8 @@ npm run test:app
 
 ## 設計資料
 
+- **[改善メモ・優先順位・修正済み一覧](docs/improvement-backlog.md)** — UI/UX・体験・保存・品質の課題をID付きで管理。改善PRで状態と確認結果を更新します。
+- [2026-09-19の画面監査（画像付き）](docs/audit/2026-09-19/README.md)
 - [同じ住処に物を増やす仕組み・開発者モード](docs/living-home.md)
 - [休息イベントと追加キャラの試用](docs/rest-events.md)
 - [追加素材と生成プロンプト](docs/rest-event-art-prompts.md)
