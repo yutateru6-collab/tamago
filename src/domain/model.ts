@@ -12,5 +12,6 @@ export interface World {
   crafting: { recipeId: string; minutes: number } | null;
   built: string[]; memories: Memory[]; seenMemoryIds: string[];
   homeCare?: { wear: number; day: string; dailyWear: number };
+  decor?: { hidden: string[]; placements: Record<string, string> };
 }
 export interface Recipe { id: string; name: string; description: string; minutes: number; cost: Partial<Record<Material, number>> }

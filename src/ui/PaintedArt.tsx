@@ -36,7 +36,8 @@ export function PaintedArt({children}: {children?: ReactNode}) {
     if(next)void video.current?.play().catch(()=>setPlaying(false));
   };
   return <div className="living-art painted-art" data-motion={playing?'playing':'paused'}>
-    <img className="scene-art" src="/art/workshop-idle.jpg" alt="木漏れ日の工房で、穏やかに過ごす青い子。"/>
+    <img className="scene-art" src="/art/home-base.webp" alt="滝と木漏れ日、小さな灯り。これから暮らしをつくる住処。"/>
+    <img className="original-companion" src="/art/workshop-idle.jpg" alt="木漏れ日の工房で、穏やかに過ごす青い子。"/>
     <video ref={video} className="painted-video" aria-label="工房の青い子の原画アニメ" src="/art/workshop-idle.mp4" poster="/art/workshop-idle.jpg" muted loop playsInline preload="metadata" hidden={failed||!running} onPlaying={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onError={()=>{setFailed(true);setPlaying(false);}}/>
     {children}
     {failed?<span className="motion-toggle" role="status">静止画で表示中</span>:<button className="motion-toggle" onClick={toggle} aria-label={playing?'キャラの動きを止める':'キャラの動きを再生する'} aria-pressed={playing}><span aria-hidden="true">{playing?'Ⅱ':'▷'}</span>動き：{playing?'オン':'オフ'}</button>}

@@ -1,12 +1,15 @@
 import type { Material, World } from '../domain/model.js';
 import { DESTINATIONS, RECIPES } from '../domain/catalog.js';
+import { DECOR } from '../domain/decor.js';
 export const STORAGE_KEY = 'tamago.world.v1';
+export const SANDBOX_KEY = 'tamago.sandbox.v1';
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
 export function isWorld(v: unknown): v is World {
   if (!v || typeof v !== 'object') return false;
   const w = v as World;
   return w.version === 1 && w.mode === 'demo' && Number.isSafeInteger(w.revision) && w.revision >= 0
+    && (w.decor === undefined || (!!w.decor && Array.isArray(w.decor.hidden) && w.decor.hidden.every(id => DECOR.some(item => item.id === id)) && !!w.decor.placements && typeof w.decor.placements === 'object' && !Array.isArray(w.decor.placements) && Object.entries(w.decor.placements).every(([id,slot]) => DECOR.some(item => item.id === id && Object.hasOwn(item.slots,slot)))))
     && (w.homeCare === undefined || (!!w.homeCare && finite(w.homeCare.wear) && w.homeCare.wear <= 100 && finite(w.homeCare.dailyWear) && w.homeCare.dailyWear <= 25 && typeof w.homeCare.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(w.homeCare.day)))
     && finite(w.vitality) && w.vitality <= 100 && finite(w.habitat) && w.habitat <= 100
     && finite(w.growthMinutes) && Number.isSafeInteger(w.processedUntil) && w.processedUntil >= 0
@@ -21,9 +24,9 @@ export function isWorld(v: unknown): v is World {
     && Array.isArray(w.seenMemoryIds) && w.seenMemoryIds.every(id => typeof id === 'string');
 }
 export class WorldRepository {
-  constructor(private readonly storage: StorageLike) {}
+  constructor(private readonly storage: StorageLike, private readonly key = STORAGE_KEY) {}
   load(): World | null {
-    const raw = this.storage.getItem(STORAGE_KEY);
+    const raw = this.storage.getItem(this.key);
     if (raw === null) return null;
     let value: unknown;
     try { value = JSON.parse(raw); } catch { throw new Error('保存データを読めません。上書きせず停止しました。'); }
@@ -36,7 +39,7 @@ export class WorldRepository {
     const saved = { ...next, revision: expectedRevision + 1 };
     if (!isWorld(saved)) throw new Error('保存する内容を確認できません');
     // Write failure must reach the UI: never pretend progress has been saved.
-    this.storage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    this.storage.setItem(this.key, JSON.stringify(saved));
     return saved;
   }
 }
