@@ -53,7 +53,11 @@ export function PaintedArt({children}: {children?: ReactNode}) {
   return <div className="living-art painted-art" data-motion={animated?'playing':'paused'} data-companion={companion.id}>
     <img className="scene-art" src="/art/home-room.webp" alt="滝と木漏れ日、小さな灯り。これから暮らしをつくる住処。"/>
     {companion.id==='original'?<><img className="original-companion" src="/art/workshop-idle.jpg" alt="木漏れ日の工房で、穏やかに過ごす青い子。"/>
-    <video ref={video} className="painted-video" aria-label="工房の青い子の原画アニメ" src="/art/workshop-idle.mp4" poster="/art/workshop-idle.jpg" muted loop playsInline preload="metadata" hidden={failed||!running} onPlaying={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onError={()=>{setFailed(true);setPlaying(false);}}/></>:<img className={`variant-companion ${companion.id}`} src={companion.image} alt={`${companion.name}。同じ住処で過ごす試作キャラクター。`}/>}
+    <video ref={video} className="painted-video" aria-label="工房の青い子の原画アニメ" src="/art/workshop-idle.mp4" poster="/art/workshop-idle.jpg" muted loop playsInline preload="metadata" hidden={failed||!running} onPlaying={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onSeeked={event=>{
+      // Some WebKit media backends pause while seeking back to the loop start.
+      // Resume only while the user's motion preference still permits playback.
+      if(running&&!document.hidden&&!failed)playVideo(event.currentTarget,()=>setPlaying(false));
+    }} onError={()=>{setFailed(true);setPlaying(false);}}/></>:<img className={`variant-companion ${companion.id}`} src={companion.image} alt={`${companion.name}。同じ住処で過ごす試作キャラクター。`}/>}
     {children}
     <button className="motion-toggle" onClick={toggle} aria-label={videoFailed?'キャラの動画を読み直して再生する':animated?'キャラの動きを止める':'キャラの動きを再生する'} aria-pressed={animated}><span aria-hidden="true">{animated?'Ⅱ':'▷'}</span>{videoFailed?'動きをもう一度読み込む':`動き：${animated?'オン':'オフ'}`}</button>
   </div>;
