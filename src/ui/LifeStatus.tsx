@@ -3,7 +3,7 @@ import type { World } from '../domain/model';
 import { homeState } from '../domain/home';
 import { ProjectArt } from './ProjectArt';
 
-export function LifeStatus({world}: {world: World}) {
+export function LifeStatus({world,compact=false}: {world: World;compact?:boolean}) {
   // Match the existing engine's work priority, not the broader scene condition label.
   const resting = world.vitality < RULES.workThreshold;
   const home = homeState(world);
@@ -14,6 +14,11 @@ export function LifeStatus({world}: {world: World}) {
   const total = recipe ? recipe.minutes : destination.minutes;
   const title = resting ? 'まずは、ひとやすみ' : repairing ? '住処を、少しずつお手入れ' : recipe ? `${recipe.name}を制作中` : `${destination.name}を探索中`;
   const percent = Math.min(100, Math.floor(minutes / total * 100));
+  if (compact) return <aside className="life-status compact-life" aria-label="この子の暮らし" data-activity={resting?'rest':repairing?'repair':recipe?'craft':'explore'}>
+    <span className="eyebrow">いま、この子は</span><h3>{title}</h3>
+    {!resting&&!repairing&&<><progress aria-label={recipe?'制作の進み具合':'探索の進み具合'} max={total} value={minutes}/><small>{percent}% · 途中の進み具合は残ります</small></>}
+    {repairing&&<small>元気が戻ってから、お手入れに約{home.repairMinutes}分</small>}
+  </aside>;
   return <aside className="life-status" aria-label="この子の暮らし" data-activity={resting ? 'rest' : repairing ? 'repair' : recipe ? 'craft' : 'explore'}>
     <span className="eyebrow">この子の暮らし</span><h3>{title}</h3>
     <p>{resting ? 'まず元気を回復。そのあと、お手入れ・制作・探索の順で進みます。' : repairing ? 'つくったものは消えていません。休息でお手入れして、また飾れます。' : '30分のお約束のあと「休めた」と伝えると進みます。'}</p>

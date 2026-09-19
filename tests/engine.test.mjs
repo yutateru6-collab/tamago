@@ -69,3 +69,48 @@ test('quiet promise: wait, confirm once, and preserve old saves', async () => {
   assert.equal(done.memories.filter(m => m.id === 'quiet:1000').length, 1);
   assert.equal(isWorld(done), true);
 });
+
+import { DECOR, decorState, arrangeDecor } from '../.test-build/domain/decor.js';
+import { sandboxPreset, sandboxRest } from '../.test-build/domain/sandbox.js';
+import { isWorld, SANDBOX_KEY } from '../.test-build/platform/storage.js';
+test('a recipe becomes one object; discoveries require a shelf, and extension uses only a definition',()=>{
+  const initial=initialWorld(0), shelf=DECOR.find(i=>i.id==='shelf');
+  assert.equal(decorState(initial,shelf).visible,false);
+  const half=sandboxPreset('half');
+  assert.equal(decorState(half,shelf).progress,.5);
+  assert.equal(decorState(half,shelf).owned,false);
+  const done=sandboxRest(half);
+  assert.equal(decorState(done,shelf).owned,true);
+  assert.equal(decorState(done,DECOR.find(i=>i.id==='garden')).visible,false);
+  const sample={id:'future-item',name:'Future',image:'/future.png',discoveries:2,parent:'shelf',defaultSlot:'a',slots:{a:{x:5,y:5,width:10,z:21}}};
+  assert.equal(decorState(sandboxPreset('finds'),sample,[...DECOR,sample]).visible,true);
+  assert.equal(decorState({...initial,expeditionCount:2},sample,[...DECOR,sample]).visible,false);
+});
+test('arranging, deterioration and repair retain acquisitions and reject unowned or invalid placement',()=>{
+  const world=sandboxPreset('full'),shelf=DECOR.find(i=>i.id==='shelf');
+  const snapshot=structuredClone(world);
+  const hidden=arrangeDecor(world,'shelf',null);
+  assert.equal(decorState(hidden,shelf).visible,false);
+  assert.equal(decorState(hidden,DECOR.find(i=>i.id==='field-notes')).visible,false);
+  assert.deepEqual(world,snapshot);
+  assert.deepEqual(hidden.built,world.built);
+  const moved=arrangeDecor(hidden,'shelf','low');
+  assert.equal(decorState(moved,shelf).placement.y,49);
+  assert.throws(()=>arrangeDecor(initialWorld(0),'shelf','wall'));
+  assert.throws(()=>arrangeDecor(world,'shelf','__proto__'));
+  const worn=sandboxPreset('empty');
+  assert.equal(decorState(worn,shelf).visible,true);
+  assert.deepEqual(sandboxRest(worn).built,worn.built);
+  assert.deepEqual(sandboxRest(worn).inventory,worn.inventory);
+});
+test('old save compatibility, decor validation and isolated sandbox repository',()=>{
+  const s=storage(),personal=new WorldRepository(s),sandbox=new WorldRepository(s,SANDBOX_KEY);
+  personal.save(initialWorld(0),0);
+  const before=s.getItem(STORAGE_KEY);
+  sandbox.save(sandboxPreset('full'),0);
+  assert.equal(s.getItem(STORAGE_KEY),before);
+  assert.equal(isWorld(personal.load()),true);
+  assert.equal(isWorld({...personal.load(),decor:{hidden:['missing'],placements:{}}}),false);
+  assert.equal(isWorld({...personal.load(),decor:{hidden:[],placements:{shelf:'invalid'}}}),false);
+  for(const preset of ['initial','half','shelf','finds','full','faded','damaged','empty']) assert.equal(isWorld(sandboxPreset(preset)),true,preset);
+});

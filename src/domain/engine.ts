@@ -61,6 +61,7 @@ export function applyActivity(original: World, windows: ActivityWindow[]): World
     while (world.expeditionMinutes >= destination.minutes) {
       world.expeditionMinutes -= destination.minutes;
       world.expeditionCount++;
+      if (world.expeditionCount === 2) remember(world, {id:'keepsake:field-notes',at:window.end,kind:'discovery',title:'森の小さな手帖を、見つけた。',detail:'二度の探索の思い出。棚ができると宝物と一緒に飾れます。'});
       for (const [item, amount] of Object.entries(destination.rewards)) world.inventory[item as Material] += amount;
       remember(world, { id: `discovery:${world.expeditionCount}`, at: window.end, kind: 'discovery', title: `${destination.name}から、拾い物。`, detail: 'この子が見つけた材料を、持ちものにしまいました。' });
     }

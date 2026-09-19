@@ -1,25 +1,27 @@
+import type { CSSProperties } from 'react';
 import type { World } from '../domain/model';
 import { homeState } from '../domain/home';
+import { DECOR, decorState, type DecorItem } from '../domain/decor';
+import { RECIPES } from '../domain/catalog';
 
-export function HabitatLayers({world}: {world: World}) {
+export function HabitatLayers({world, showSlots=false}: {world: World; showSlots?: boolean}) {
   const home = homeState(world);
-  const shelf = world.built.includes('shelf');
-  const buildingShelf = world.crafting?.recipeId === 'shelf';
-  const progress = buildingShelf ? world.crafting!.minutes / 60 : 0;
-  const garden = world.built.includes('garden');
-  const hammock = world.built.includes('hammock');
-  const label = home.stage === 'empty' ? '飾りをしまった住処。休息で修繕できます。' : home.stage === 'damaged' ? '家具が傷み、飾りが減った住処。' : home.stage === 'faded' ? '植物がしおれ、少し寂しくなった住処。' : 'お手入れされた住処。';
-  return <div className="habitat-layers" data-home-stage={home.stage} role="img" aria-label={label}>
-    <img className="home-clean-plate" src="/art/home-empty.jpg" alt=""/>
-    {shelf && home.stage !== 'empty' && <div className="home-shelf" data-testid="home-shelf">
-      <img className="shelf-timber" src="/art/home-shelf.webp" alt=""/>
-      {Array.from({length:home.treasureCount},(_,index)=><img key={index} className={`home-treasure treasure-${index}`} src="/art/home-treasure.webp" alt=""/>)}
-    </div>}
-    {buildingShelf && <div className="home-shelf shelf-in-progress" data-testid="home-shelf-progress" style={{clipPath:`inset(${progress >= .5 ? 47 : 74}% 0 0 0)`}}><img src="/art/home-shelf.webp" alt=""/></div>}
-    {garden && home.stage !== 'empty' && <img className="home-plant" data-testid="home-plant" src={home.stage === 'warm'?'/art/home-plant.webp':'/art/home-plant-wilt.webp'} alt=""/>}
-    {hammock && home.stage !== 'empty' && <img className="home-hammock" data-testid="home-hammock" src="/art/home-hammock.webp" alt=""/>}
-    {!shelf && !buildingShelf && world.expeditionMinutes > 0 && <div className="home-found-wood" data-testid="home-found-wood"><img src="/art/home-shelf.webp" alt=""/></div>}
+  const recipe = RECIPES.find(r => r.id === world.crafting?.recipeId);
+  const render = (item: DecorItem) => {
+    const state = decorState(world,item);
+    if (!state.visible) return null;
+    const p = state.placement;
+    const style: CSSProperties = {left:`${p.x}%`,top:`${p.y}%`,width:`${p.width}%`,zIndex:p.z};
+    const label = state.crafting ? `${item.name}を制作中 ${Math.floor(state.progress*100)}%` : `${item.name}${home.wear>0?'（お手入れ待ち）':''}`;
+    return <div key={item.id} className={`decor-item ${state.crafting?'decor-building':''} ${item.id.startsWith('treasure')?'home-treasure':''}`} data-decor={item.id} data-testid={`home-${item.id==='garden'?'plant':item.id}${state.crafting?'-progress':''}`} data-progress={state.progress} style={style}>
+      <img src={state.image} alt={label} draggable={false} style={state.crafting?{clipPath:`inset(${Math.round(75*(1-state.progress))}% 0 0 0)`}:undefined}/>
+      {!state.crafting && DECOR.filter(child=>child.parent===item.id).map(render)}
+    </div>;
+  };
+  return <div className="habitat-layers" data-home-stage={home.stage} aria-label={home.wear>0?'お手入れが必要な住処。つくったものは残っています。':'お手入れされた住処。'}>
+    {DECOR.filter(item=>!item.parent).map(render)}
+    {showSlots && DECOR.filter(item=>!item.parent).flatMap(item=>Object.entries(item.slots).map(([key,p])=><div className="decor-slot" key={`${item.id}:${key}`} style={{left:`${p.x}%`,top:`${p.y}%`,width:`${p.width}%`}}>{item.name} · {key}</div>))}
     <div className="home-atmosphere"/>
-    <span className="home-scene-note">{buildingShelf?`小さな棚を制作中 · ${Math.floor(progress*100)}%`:home.wear>0?'少し休んだら、お手入れのつづき':shelf?`棚の宝物 ${home.treasureCount}こ`:world.expeditionMinutes>0?'木のかけらを見つけたところ':'ここから、暮らしをつくろう'}</span>
+    <span className="home-scene-note">{recipe?`${recipe.id==='shelf'?'小さな棚':recipe.name}を制作中 · ${Math.floor(world.crafting!.minutes/recipe.minutes*100)}%`:home.wear>0?'つくったものを、また元気に':world.built.length?`暮らしに、${world.built.length}つの手づくり`:'ここから、暮らしをつくろう'}</span>
   </div>;
 }

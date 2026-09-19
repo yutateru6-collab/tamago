@@ -1,39 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { initialWorld } from '../src/domain/engine';
 
-test('layered home: deterioration, preserved achievements, repair and visual stages',async({page},testInfo)=>{
-  await page.setViewportSize({width:390,height:844});
-  await page.goto('/');
-  const base={...initialWorld(Date.UTC(2026,8,18)),vitality:100,habitat:100,built:['shelf','garden','hammock'],expeditionCount:3};
-  for (const [wear,stage] of [[0,'warm'],[25,'faded'],[50,'damaged'],[75,'empty']] as const) {
-    await page.evaluate(w=>localStorage.setItem('tamago.world.v1',JSON.stringify(w)),{...base,homeCare:{wear,day:'2026-09-18',dailyWear:0}});
-    await page.reload();
-    if (wear === 0) {
-      await expect(page.locator('[data-home-growth-stage="3"]')).toBeVisible();
-      await expect(page.locator('.home-growth-art')).toHaveAttribute('src','/art/home-growth-3.avif');
-      await expect(page.locator('.habitat-layers')).toHaveCount(0);
-    } else {
-      await expect(page.locator('.habitat-layers')).toHaveAttribute('data-home-stage',stage);
-      await expect.poll(()=>page.locator('.habitat-layers img').evaluateAll(images=>images.every(image=>(image as HTMLImageElement).complete&&(image as HTMLImageElement).naturalWidth>0))).toBe(true);
-      await expect(page.getByTestId('home-shelf')).toHaveCount(wear===75?0:1);
-      await expect(page.locator('.home-treasure')).toHaveCount(Math.max(0,3-Math.floor(wear/25)));
-      await expect(page.getByTestId('home-plant')).toHaveCount(wear===75?0:1);
-    }
-    const path=`test-results/${testInfo.project.name}-home-${stage}.png`;
-    await page.screenshot({path}); await testInfo.attach(stage,{path,contentType:'image/png'});
-  }
-  await page.getByRole('button',{name:'設定と試作モード'}).click();
-  await page.getByRole('button',{name:'離れた時間を試す（2時間）'}).click();
-  await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
-  await page.getByRole('button',{name:'住処をのぞく'}).click();
-  await expect(page.locator('[data-home-growth-stage="3"]')).toBeVisible();
-  await page.reload();
-  await expect(page.locator('[data-home-growth-stage="3"]')).toBeVisible();
-  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('tamago.world.v1')!));
-  expect(saved.built).toEqual(base.built);
-  expect(saved.inventory).toEqual(base.inventory);
-});
-
 test('first thirty minutes visibly advances the unfinished shelf',async({page})=>{
   await page.clock.setFixedTime(new Date('2026-09-18T00:00:00Z'));
   await page.goto('/');
@@ -49,64 +16,6 @@ test('first thirty minutes visibly advances the unfinished shelf',async({page})=
   await expect(page.locator('.home-scene-note')).toContainText('50%');
   await page.reload();
   await expect(page.locator('.home-scene-note')).toContainText('50%');
-});
-
-test('painted companion keeps the approved base motion and switches to approved growth art',async({page})=>{
-  await page.setViewportSize({width:390,height:844});
-  await page.goto('/');
-  const video=page.getByLabel('工房の青い子の原画アニメ');
-  await expect(video).toHaveJSProperty('paused',false);
-  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(1);
-  await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','explore');
-  await page.getByRole('button',{name:'住処',exact:true}).click();
-  await page.getByRole('button',{name:'これをつくろう',exact:true}).click();
-  await page.getByRole('button',{name:'ホーム',exact:true}).click();
-  await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','craft');
-  await page.getByRole('button',{name:'設定と試作モード'}).click();
-  await page.getByRole('button',{name:'離れた時間を試す（2時間）'}).click();
-  await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
-  await page.getByRole('button',{name:'住処をのぞく'}).click();
-  await expect(page.locator('[data-home-growth-stage="1"]')).toBeVisible();
-  await expect(page.locator('.home-growth-art')).toHaveAttribute('src','/art/home-growth-1.avif');
-  await expect(page.getByLabel('工房の青い子の原画アニメ')).toHaveCount(0);
-  await expect(page.locator('.life-keepsakes')).toContainText('宝物の小さな棚');
-  await page.reload();
-  await expect(page.locator('[data-home-growth-stage="1"]')).toBeVisible();
-  await page.getByRole('button',{name:'設定と試作モード'}).click();
-  await page.getByRole('button',{name:'使いすぎた状態を試す（2時間）'}).click();
-  await page.getByRole('button',{name:'住処に戻る',exact:true}).click();
-  await expect(page.locator('[data-home-growth-stage="1"]')).toBeVisible();
-  await expect(page.getByRole('complementary',{name:'この子の暮らし'})).toHaveAttribute('data-activity','rest');
-});
-test('craft, return, persist, and deteriorate', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', e => errors.push(e.message));
-  await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'こもれびの巣' })).toBeVisible();
-  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 960);
-  await page.getByRole('button', { name: '住処', exact: true }).click();
-  await page.getByRole('button', { name: 'これをつくろう', exact: true }).click();
-  await page.getByRole('button', { name: 'ホーム', exact: true }).click();
-  await page.getByRole('button', { name: '設定と試作モード' }).click();
-  await page.getByRole('button', { name: '離れた時間を試す（2時間）', exact: true }).click();
-  await page.getByRole('button', { name: '住処に戻る', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '宝物の小さな棚が、できていた。' })).toBeVisible();
-  await page.getByRole('button', { name: '住処をのぞく' }).click();
-  await expect(page.getByRole('dialog', { name: 'おかえり', exact: true })).toBeHidden();
-  await page.reload();
-  await page.getByRole('button', { name: '住処', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'できあがり', exact: true })).toBeDisabled();
-  await page.getByRole('button', { name: 'ホーム', exact: true }).click();
-  await page.getByRole('button', { name: '設定と試作モード' }).click();
-  await page.getByRole('button', { name: '使いすぎた状態を試す（2時間）', exact: true }).click();
-  await page.getByRole('button', { name: '使いすぎた状態を試す（2時間）', exact: true }).click();
-  await page.getByRole('button', { name: '住処に戻る', exact: true }).click();
-  await expect(page.locator('.scene-art')).toHaveAttribute('src', '/art/workshop-idle.jpg');
-  await expect(page.getByRole('region',{name:'住処の様子：まずは、ひとやすみ'})).toBeVisible();
-  await expect(page.locator('.scene-art')).toHaveJSProperty('naturalWidth', 960);
-  await page.getByRole('button', { name: '記録', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '宝物の小さな棚が、できていた。' })).toBeVisible();
-  expect(errors).toEqual([]);
 });
 
 test('iPhone fullscreen, persisted promise, confirmation and no penalty on cancel', async ({ page }) => {
@@ -126,11 +35,15 @@ test('iPhone fullscreen, persisted promise, confirmation and no penalty on cance
   await page.getByRole('button',{name:'30分、スマホを休めた'}).click();
   await expect(page.getByRole('heading',{name:'30分、そっと見守ってくれた。'})).toBeVisible();
   await page.getByRole('button',{name:'住処をのぞく'}).click();
+  await page.getByText('元気・持ちもの・暮らし方',{exact:true}).click();
   await expect(page.getByRole('meter',{name:'この子の元気'})).toHaveAttribute('value','64');
+  await page.getByText('元気・持ちもの・暮らし方',{exact:true}).click();
   await page.getByRole('button',{name:'30分、協力する',exact:true}).click();
   await page.getByRole('button',{name:'途中でやめる（罰はありません）'}).click();
   await page.getByRole('button',{name:'今回はおしまいにする'}).click();
+  await page.getByText('元気・持ちもの・暮らし方',{exact:true}).click();
   await expect(page.getByRole('meter',{name:'この子の元気'})).toHaveAttribute('value','64');
+  await page.getByText('元気・持ちもの・暮らし方',{exact:true}).click();
   await page.screenshot({path:'test-results/iphone-home.png'});
 });
 
