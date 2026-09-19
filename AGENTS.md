@@ -10,6 +10,130 @@ Before making substantial visual changes, use the Product Design plugin's `get-c
 
 When implementing from a selected generated mock, treat that image as the source of truth for layout, component anatomy, density, spacing, color, typography, visible content, and hierarchy.
 
+## Tamago Non-Negotiable Working Rules
+
+These rules exist to prevent accidental redesigns, regressions, low-quality visual substitutions, and unverified handoffs. Follow them on every task in this repository.
+
+### Instruction precedence
+
+When instructions conflict, use this order:
+
+1. The user's latest explicit instruction for the current task.
+2. The newest dated, explicitly approved Tamago product/design decision in this file.
+3. The task-specific document referenced by that decision (for example `docs/living-home.md`, `docs/rest-events.md`, or `docs/improvement-backlog.md`).
+4. The generic runtime/component rules in this file.
+5. Older notes, screenshots, prototypes, or assumptions.
+
+A newer instruction supersedes only the conflicting part of an older one. Preserve everything else.
+
+### Preserve-by-default rule
+
+- Do not redesign, restyle, reorganize, rename, replace, or "improve" anything the user did not ask to change.
+- Treat existing UI/UX, navigation, copy, saved-state behavior, progression rules, artwork, character identity, and interaction patterns as locked by default.
+- Make the smallest coherent change that satisfies the request. Do not bundle unrelated refactors, dependency upgrades, cleanup, architecture changes, or speculative features.
+- If a requested change can be made locally, do not rewrite a whole screen or subsystem.
+- Do not remove working behavior merely because a simpler implementation is possible.
+- Do not infer permission for a broad redesign from words such as "improve", "fix", "clean up", or "make it better". Improve the named problem first.
+
+### Inspect before editing
+
+Before changing code:
+
+- Read the target file(s), the immediately related components/styles/tests, and any referenced Tamago doc.
+- For improvement work, read `docs/improvement-backlog.md` and identify the applicable TAM ID before editing.
+- Confirm the current implementation rather than relying on an old screenshot, previous chat description, or memory.
+- Identify the smallest likely file set and the behaviors that must remain unchanged.
+- Check whether the requested behavior already exists before adding a second implementation.
+
+If the repository and the user's description disagree, treat the current repository plus the latest explicit user instruction as authoritative and call out the discrepancy in the handoff.
+
+### UI and interaction guardrails
+
+- Preserve the current information architecture and visual hierarchy unless the user explicitly asks to change them.
+- Do not move buttons, tabs, cards, labels, timers, or navigation merely for aesthetic preference.
+- Do not change typography, spacing scale, color system, icon style, border radius, illustration style, or animation language outside the requested area.
+- Keep mobile-first behavior as the primary target. Verify iPhone-sized layouts and do not accept desktop-only correctness.
+- Maintain touch target usability, safe areas, scrolling, keyboard behavior, reduced-motion behavior, and saved-state semantics.
+- Any developer/debug controls must remain visually distinct from the normal user experience and must not write normal progress unless explicitly designed to do so.
+
+### Image and motion quality guardrails
+
+- Never replace a higher-resolution source with a lower-resolution derivative for convenience.
+- Do not rasterize the whole home scene to add a tiny animation if the result lowers apparent sharpness.
+- Do not fake eye/ear/tail motion with a visibly mismatched low-resolution overlay, hard mask edge, color mismatch, or seam. If compositing quality is not convincing at real phone size, stop and use a higher-quality asset/motion pipeline instead of shipping the artifact.
+- Reuse approved original artwork at its best available source resolution. Preserve aspect ratio and avoid unnecessary transcoding generations.
+- When introducing a crop, mask, overlay, video, or canvas layer, verify edge continuity, texture continuity, sharpness, alpha handling, and scaling on the production-size viewport.
+- Motion must be calm, continuous, and intentional. Avoid twitchy loops, abrupt restarts, unnatural easing, or movement that makes the character look detached from the painted scene.
+- Verify animation by watching normal playback. Do not claim motion is good based only on a single frame or by seeking to a timestamp.
+- Keep a still/reduced-motion path whenever the feature already supports or requires it.
+
+### State and product-integrity guardrails
+
+- Never grant progress from animation playback, visual-only state, page reloads, developer previews, or elapsed wall-clock time that has not passed through the existing confirmed transaction rules.
+- Do not silently change crafting costs, rest rates, wear caps, invitation thresholds, repair semantics, or persistence keys while doing UI work.
+- Existing achievements/acquisitions must survive presentation changes.
+- Developer mode remains isolated from normal progress unless the user explicitly changes that contract.
+- Outcome text must describe committed state, not a predicted state or a cosmetic animation.
+
+### Verification before handoff
+
+Use the repository's real scripts; do not invent substitute checks.
+
+For every code change, run the checks relevant to the touched surface. Before a normal handoff, the expected baseline is:
+
+```bash
+npm run check:runtime
+npm test
+npm run check:worker
+npm run test:sites
+```
+
+For app/UI changes, also run:
+
+```bash
+npm run build
+npm run test:app
+```
+
+For runtime/mobile-frame changes, also run the runtime Playwright suite when applicable:
+
+```bash
+npm run test:runtime
+```
+
+When a check cannot be run because of the environment, say exactly which check was not run and why. Never report a check as passed without its actual successful result.
+
+For visible changes:
+
+- Inspect real rendered screenshots at phone widths, not just source code.
+- Check both Chromium and WebKit when the existing test setup covers them.
+- Inspect the requested changed state and at least one important neighboring/unchanged state.
+- For motion, inspect normal playback/video when available.
+- For image-quality work, compare apparent sharpness and seams at the actual rendered phone size.
+
+### Deployment truthfulness
+
+- A commit to `main`, a successful local build, and a successful GitHub Actions run are not the same as a verified production deployment.
+- Never say "deployed", "live", "production is fixed", or equivalent unless the public URL was actually checked after the change.
+- Always distinguish: code changed / local checks passed / CI passed / production verified.
+- The production URL is `https://tamago.itisnowornever271.workers.dev/`.
+- Every Tamago handoff must include that URL and explicitly state whether the changed behavior was verified there.
+
+### Handoff format
+
+Keep the final report compact but concrete. Include:
+
+- what changed,
+- which files changed,
+- what was deliberately left unchanged,
+- exact checks run and their result,
+- visual/motion evidence inspected when relevant,
+- CI/deployment status,
+- the production URL.
+
+Do not hide known limitations behind generic phrases such as "looks good" or "should work".
+
+
 ## Editing Boundary
 
 - Build app-specific UI in `src/Prototype.tsx` and `src/prototype.css`.
