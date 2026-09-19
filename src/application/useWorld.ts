@@ -5,6 +5,7 @@ import { DemoActivityProvider } from '../platform/activity';
 import { STORAGE_KEY, SANDBOX_KEY, WorldRepository } from '../platform/storage';
 import { arrangeDecor } from '../domain/decor';
 import { sandboxPreset, sandboxRest } from '../domain/sandbox';
+import { enjoyRestEvent } from '../domain/restEvents';
 
 export function useWorld(sandbox = false) {
   const key = sandbox ? SANDBOX_KEY : STORAGE_KEY;
@@ -33,6 +34,7 @@ export function useWorld(sandbox = false) {
     } catch (e) { setError(e instanceof Error ? e.message : '保存できませんでした。容量や設定をご確認ください。'); return false; }
   };
   return { world, ready, error, reload,
+    enjoy: (id: string, expectedEnjoyed: number) => transact(w => enjoyRestEvent(w,id,expectedEnjoyed)),
     arrange: (id: string, slot: string | null) => transact(w => arrangeDecor(w,id,slot)),
     preset: (name: string) => sandbox ? transact(() => {const w=sandboxPreset(name);return {...w,seenMemoryIds:w.memories.map(m=>m.id)};}) : Promise.resolve(false),
     restNow: () => sandbox ? transact(sandboxRest) : Promise.resolve(false),

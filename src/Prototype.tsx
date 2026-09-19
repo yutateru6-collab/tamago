@@ -11,6 +11,9 @@ import { QuietTime } from './ui/QuietTime';
 import { DeveloperPanel } from './ui/DeveloperPanel';
 import { SANDBOX_KEY } from './platform/storage';
 import type { World } from './domain/model';
+import { restEventState, type RestEventId } from './domain/restEvents';
+import { RestEventSheet } from './ui/RestEvents';
+import { CompanionProvider, COMPANIONS, COMPANION_KEY, type CompanionId } from './ui/CompanionContext';
 
 const tabs = [{ id:'home', label:'ホーム', Icon:HomeIcon },{ id:'explore',label:'探索',Icon:GlobeIcon },{id:'habitat',label:'住処',Icon:BackpackIcon},{id:'journal',label:'記録',Icon:ReaderIcon}] as const;
 type Tab = typeof tabs[number]['id'] | 'developer';
@@ -34,20 +37,27 @@ function WorldApp({sandbox,changeMode,entryError}:{sandbox:boolean;changeMode:(e
   const [settings,setSettings]=useState(false);
   const [away,setAway]=useState(false);
   const [busy,setBusy]=useState(false);
+  const [event,setEvent]=useState<{id:RestEventId;expected:number}|null>(null);
+  const [companion,setCompanion]=useState<CompanionId>(()=>{
+    try {const saved=sandbox?sessionStorage.getItem(COMPANION_KEY):null;return COMPANIONS.find(c=>c.id===saved)?.id??'original';}catch{return 'original';}
+  });
+  const [companionError,setCompanionError]=useState('');
+  const chooseCompanion=(id:CompanionId)=>{try{sessionStorage.setItem(COMPANION_KEY,id);setCompanion(id);setCompanionError('');}catch{setCompanionError('このタブにキャラの選択を保存できませんでした。');}};
   const unseen=app.world.memories.filter(m=>!app.world.seenMemoryIds.includes(m.id));
-  const act=async(fn:()=>Promise<unknown>)=>{if(busy)return;setBusy(true);try{await fn();}finally{setBusy(false);}};
-  const openQuiet=()=>void act(async()=>{if(await app.beginQuiet()){setTab('home');setAway(true);}});
-  const showHome=()=>void act(async()=>{if(await app.acknowledge()){setAway(false);setTab('home');}});
+  const act=async(fn:()=>Promise<boolean>)=>{if(busy)return false;setBusy(true);try{return await fn();}finally{setBusy(false);}};
+  const openQuiet=()=>void act(async()=>{const ok=await app.beginQuiet();if(ok){setTab('home');setAway(true);}return ok;});
+  const showHome=()=>void act(async()=>{const ok=await app.acknowledge();if(ok){setAway(false);setTab('home');}return ok;});
   const blocked=!app.ready||busy;
-  return <div className={`tamago ${sandbox?'is-sandbox':''}`}>
+  return <CompanionProvider id={sandbox?companion:'original'}><div className={`tamago ${sandbox?'is-sandbox':''}`}>
     {sandbox&&<div className="sandbox-banner"><span>開発者モード · 試作用の記録</span><button onClick={()=>{setAway(false);setTab('developer');}}>確認パネル</button><button onClick={()=>changeMode(false)}>通常に戻る</button></div>}
     <MobileScroll key={away?'away':tab} className="app-screen"><main className="tamago-content">
       {app.error && <div className="error" role="alert">{app.error}<button onClick={app.reload}>読み直す</button></div>}
-      {away && app.world.quietSession ? <QuietTime world={app.world} busy={blocked} complete={()=>void act(async()=>{if(await app.completeQuiet())setAway(false);})} cancel={()=>void act(async()=>{if(await app.cancelQuiet())setAway(false);})} back={()=>setAway(false)}/>
-      : sandbox&&tab==='developer'?<DeveloperPanel world={app.world} busy={blocked} preset={name=>void act(()=>app.preset(name))} rest={()=>void act(app.restNow)} simulate={(kind,minutes)=>void act(()=>app.simulate(kind,minutes))} onHome={()=>setTab('home')}/>
-      : tab==='home'?<Home world={app.world} busy={blocked} onAway={openQuiet} onSettings={()=>setSettings(true)} onHabitat={()=>setTab('habitat')}/>
-      : tab==='explore'?<Explore world={app.world} busy={blocked} onAway={openQuiet} travel={id=>void act(async()=>{if(await app.travel(id))setTab('home');})}/>
-      : tab==='habitat'?<Habitat world={app.world} busy={blocked} onAway={openQuiet} onExplore={()=>setTab('explore')} arrange={(id,slot)=>void act(()=>app.arrange(id,slot))} craft={id=>void act(async()=>{if(await app.craft(id))setTab('home');})}/>
+      {companionError&&<p role="alert" className="error">{companionError}</p>}
+      {away && app.world.quietSession ? <QuietTime world={app.world} busy={blocked} complete={()=>void act(async()=>{const ok=await app.completeQuiet();if(ok)setAway(false);return ok;})} cancel={()=>void act(async()=>{const ok=await app.cancelQuiet();if(ok)setAway(false);return ok;})} back={()=>setAway(false)}/>
+      : sandbox&&tab==='developer'?<DeveloperPanel world={app.world} busy={blocked} preset={name=>void act(()=>app.preset(name))} rest={()=>void act(app.restNow)} simulate={(kind,minutes)=>void act(()=>app.simulate(kind,minutes))} onHome={()=>setTab('home')} companion={companion} onCompanion={chooseCompanion}/>
+      : tab==='home'?<Home world={app.world} busy={blocked} onAway={openQuiet} onSettings={()=>setSettings(true)} onHabitat={()=>setTab('habitat')} onEvent={id=>setEvent({id,expected:restEventState(app.world,id).enjoyed})}/>
+      : tab==='explore'?<Explore world={app.world} busy={blocked} onAway={openQuiet} travel={id=>void act(async()=>{const ok=await app.travel(id);if(ok)setTab('home');return ok;})}/>
+      : tab==='habitat'?<Habitat world={app.world} busy={blocked} onAway={openQuiet} onExplore={()=>setTab('explore')} arrange={(id,slot)=>void act(()=>app.arrange(id,slot))} craft={id=>void act(async()=>{const ok=await app.craft(id);if(ok)setTab('home');return ok;})}/>
       : <Journal world={app.world}/>}
     </main></MobileScroll>
     {!away && <nav className="bottom-nav" aria-label="メインメニュー">{tabs.map(({id,label,Icon})=><button key={id} aria-current={tab===id?'page':undefined} onClick={()=>setTab(id)}><Icon/><span>{label}</span></button>)}</nav>}
@@ -61,8 +71,9 @@ function WorldApp({sandbox,changeMode,entryError}:{sandbox:boolean;changeMode:(e
         <button className="secondary" onClick={()=>setSettings(false)}>住処に戻る</button>
       </div>
     </BottomSheet>
-    <BottomSheet open={!settings && unseen.length>0} onOpenChange={open=>{if(!open)void act(app.acknowledge);}} title="おかえり" description={sandbox?'試作用の住処で起きた変化です。通常の記録には反映しません。':'記録した休息で、この子の暮らしが進みました。'} snap={0.82}>
+    {event&&<RestEventSheet key={`${event.id}:${event.expected}`} world={app.world} id={event.id} expected={event.expected} busy={blocked} error={app.error} enjoy={()=>act(()=>app.enjoy(event.id,event.expected))} close={()=>setEvent(null)}/>}
+    <BottomSheet open={!settings && !event && unseen.length>0} onOpenChange={open=>{if(!open)void act(app.acknowledge);}} title="おかえり" description={sandbox?'試作用の住処で起きた変化です。通常の記録には反映しません。':'記録した休息で、この子の暮らしが進みました。'} snap={0.82}>
       <div className="sheet-body">{unseen.slice(0,3).map(m=><article className="memory" key={m.id}><h3>{m.title}</h3><p>{m.detail}</p></article>)}{unseen.length>3&&<p>ほかの変化も、記録に残しました。</p>}<p className="muted">途中までの制作も、自動で保存済みです。次は、好きなときに。</p>{app.error && <p role="alert" className="error">{app.error}</p>}<button className="primary" disabled={blocked} onClick={showHome}>住処をのぞく</button></div>
     </BottomSheet>
-  </div>;
+  </div></CompanionProvider>;
 }

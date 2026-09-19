@@ -13,7 +13,7 @@ test('same home, original motion, and only earned furniture at every stage',asyn
   await page.setViewportSize({width:390,height:844});
   for(const name of ['initial','half','shelf','finds','full','faded','damaged','empty']) {
     await seed(page,name);
-    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-base.webp');
+    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-room.webp');
     await expect(page.locator('.home-growth-art')).toHaveCount(0);
     await expect(page.getByLabel('工房の青い子の原画アニメ')).toHaveCount(1);
     await expect(page.locator('[data-decor="shelf"]')).toHaveCount(name==='initial'?0:1);
@@ -103,7 +103,7 @@ test('normal play builds the shelf, adds only earned keepsakes and survives relo
     await page.clock.setFixedTime(new Date(start+step*1800000));
     await page.getByRole('button',{name:'30分、スマホを休めた'}).click();
     await page.getByRole('button',{name:'住処をのぞく'}).click();
-    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-base.webp');
+    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-room.webp');
     await expect(page.getByTestId('home-shelf')).toHaveCount(step>=2?1:0);
     await expect(page.locator('[data-decor="field-notes"]')).toHaveCount(step===6?1:0);
     await expect(page.getByTestId('home-hammock')).toHaveCount(0);
