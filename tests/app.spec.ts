@@ -209,3 +209,15 @@ test('priority UX: first goal, compact secondary screens, safe usage confirmatio
   await page.getByRole('button',{name:'復元しない'}).click();
   await expect(page.getByRole('status')).toContainText('現在の記録はそのまま');
 });
+
+
+test('priority actions stay visible at audited phone sizes',async({page})=>{
+  for(const size of [{width:390,height:844},{width:360,height:740}]){
+    await page.setViewportSize(size);
+    await page.goto('/');
+    await page.getByRole('button',{name:'探索',exact:true}).click();
+    await expect(page.locator('.choice-card').first().getByRole('button')).toBeInViewport();
+    await page.getByRole('button',{name:'住処',exact:true}).click();
+    await expect(page.getByRole('button',{name:'これをつくろう',exact:true}).first()).toBeInViewport();
+  }
+});
