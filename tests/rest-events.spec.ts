@@ -8,6 +8,14 @@ async function seed(page:Page, preset='rest120') {
   await page.evaluate(w=>localStorage.setItem('tamago.world.v1',JSON.stringify({...w,seenMemoryIds:w.memories.map(m=>m.id)})),world);
   await page.reload();
 }
+async function expectClearControls(page:Page) {
+  // Measure both elements in one frame: the sheet itself moves during entrance.
+  await expect.poll(()=>page.getByRole('dialog').evaluate(el=>{
+    const prop=el.querySelector('.event-tableau')!.getBoundingClientRect();
+    const control=el.querySelector('.motion-toggle')!.getBoundingClientRect();
+    return control.top-prop.bottom;
+  })).toBeGreaterThanOrEqual(0);
+}
 test('rest event: real thirty minute confirmation unlocks food; postpone, enjoy and reload preserve balance',async({page},info)=>{
   await page.setViewportSize({width:390,height:844});
   const start=Date.UTC(2026,8,19);await page.clock.setFixedTime(new Date(start));
@@ -54,21 +62,20 @@ test('event save failure grants no completion; stale requests from another tab c
   expect(saved.restEvents).toEqual({minutes:120,enjoyed:{tea:1}});
 });
 
-test('all three companions share backgrounds, possessions and events across screens without changing personal saves',async({page},info)=>{
-  test.setTimeout(90000);
+for(const [id,name] of [['original','工房の青い子'],['chestnut','木の実色の子'],['owl','こもれびのフクロウ']]) test(`companion ${id} shares backgrounds, possessions and events without changing personal saves`,async({page},info)=>{
+  test.setTimeout(60000);
   await page.setViewportSize({width:390,height:844});
   await seed(page);
   const before=await page.evaluate(()=>localStorage.getItem('tamago.world.v1'));
   await page.getByRole('button',{name:'設定と試作モード'}).click();
   await page.getByRole('button',{name:'開発者モードを開く'}).click();
-  for(const [id,name] of [['chestnut','木の実色の子'],['owl','こもれびのフクロウ'],['original','工房の青い子']]) {
     await page.getByRole('button',{name,exact:true}).click();
     await page.getByRole('button',{name:'休息120分・ピクニック',exact:true}).click();
     await page.getByRole('button',{name:'この状態でホームを見る'}).click();
     for(const tab of ['ホーム','探索','住処','記録']) {
       await page.getByRole('button',{name:tab,exact:true}).click();
       await expect(page.locator('.living-art')).toHaveAttribute('data-companion',id);
-      await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-base.webp');
+      await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-room.webp');
       await expect(page.locator('[data-decor="shelf"]')).toHaveCount(0);
       await expect.poll(()=>page.locator('.living-art img').evaluateAll(imgs=>imgs.every(img=>(img as HTMLImageElement).naturalWidth>0))).toBe(true);
     }
@@ -77,8 +84,7 @@ test('all three companions share backgrounds, possessions and events across scre
     const event=page.getByRole('dialog',{name:'水辺のピクニック',exact:true});
     await expect(event.locator('.living-art')).toHaveAttribute('data-companion',id);
     await expect.poll(()=>event.locator('.event-icon').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
-    const prop=await event.locator('.event-tableau').boundingBox(),control=await event.locator('.motion-toggle').boundingBox();
-    expect(prop!.y+prop!.height).toBeLessThanOrEqual(control!.y);
+    await expectClearControls(page);
     await page.screenshot({path:`test-results/visual/${info.project.name}-picnic-ready-${id}.png`});
     await page.getByRole('button',{name:'お弁当をひらく'}).click();
     await expect(event.getByRole('status')).toContainText('お弁当を半分こ');
@@ -96,12 +102,11 @@ test('all three companions share backgrounds, possessions and events across scre
     }
     await page.reload();
     await expect(page.locator('.living-art')).toHaveAttribute('data-companion',id);
-  }
   expect(await page.evaluate(()=>localStorage.getItem('tamago.world.v1'))).toBe(before);
   await page.getByRole('button',{name:'通常に戻る'}).click();
   await expect(page.locator('.living-art')).toHaveAttribute('data-companion','original');
   expect(await page.evaluate(()=>localStorage.getItem('tamago.world.v1'))).toBe(before);
-  expect(await page.evaluate(key=>sessionStorage.getItem(key),COMPANION_KEY)).toBe('original');
+  expect(await page.evaluate(key=>sessionStorage.getItem(key),COMPANION_KEY)).toBe(id);
 });
 
 test('event cards and sheets fit phone widths and all invitations remain reachable',async({page},info)=>{
@@ -112,8 +117,7 @@ test('event cards and sheets fit phone widths and all invitations remain reachab
     await page.screenshot({path:`test-results/visual/${info.project.name}-events-${width}.png`});
     await page.getByRole('button',{name:'こもれびのお茶を楽しむ'}).click();
     await expect.poll(()=>page.getByRole('dialog').locator('.event-icon').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
-    const prop=await page.locator('.event-tableau').boundingBox(),control=await page.getByRole('dialog').locator('.motion-toggle').boundingBox();
-    expect(prop!.y+prop!.height).toBeLessThanOrEqual(control!.y);
+    await expectClearControls(page);
     await page.getByRole('button',{name:'お茶を淹れる',exact:true}).click();
     await expect(page.getByRole('status')).toContainText('ふたつのカップ');
     expect(await page.locator('.rest-event-sheet').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);

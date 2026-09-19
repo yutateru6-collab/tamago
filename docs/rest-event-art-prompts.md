@@ -1,5 +1,13 @@
 # 追加キャラとイベント素材の生成記録
 
+## public/art/home-room.webp
+
+背景とキャラを分離するため、home-base.webp を編集対象にして built-in image_gen で生成。元の青い子を含む旧背景は参照用に残した。新背景はキャラのない共通背景。原本: exec-f71455ce-1411-430d-8c58-67c8c796b709.png。960×1280に縮小しWebP化。
+
+```text
+Use case: precise-object-edit. Edit target: the supplied tamago woodland dwelling background. Remove ONLY the entire teal long-eared creature and its small brown shoulder bag from the lower-left-center rock, including EVERY part of its tall pink ears, blue fur, paws and curling tail. Reconstruct the rock surface, little plants, and waterfall/wall that were hidden behind the creature. The final picture must contain ZERO characters or animals, ZERO eyes, ears, tails or silhouettes. This is a clean background plate onto which different characters will be composited. Preserve the existing composition, portrait 3:4 dimensions, camera perspective, rock locations, open waterfall on the left, bare right stone wall, wooden vertical beams, single upper-right lantern, top sunlight and exact warm painterly gouache style. Do not add furniture, tools, props, people, text, symbols, or creatures. Preserve all other areas as closely as possible. Fully painted opaque background, no transparent hole.
+```
+
 Built-in image_gen を使用。キャラ2枚は workshop-idle.jpg を絵柄の参考として生成。イベント3枚は新規生成。原本は C:/Users/tgonl/.codex/generated_images/01a0b7e7-b548-7fd0-ac4e-1767f7ab2731/ 以下。透明alphaを保持し、キャラ600px・小物420pxへ縮小してWebP化した。既存原画・動画を上書きしていない。
 
 ## public/art/companion-chestnut.webp

@@ -151,7 +151,7 @@ meter::-moz-meter-bar { background:#668350; }
 .motes i { position:absolute; width:3px; height:3px; border-radius:50%; background:#fff4b1; box-shadow:0 0 7px #fbeb9c; top:64%; animation:drift 13s linear infinite; }
 @keyframes drift { 0% { transform:translate(0,80px); opacity:0; } 25%,65% { opacity:.65; } 100% { transform:translate(20px,-150px); opacity:0; } }
 .weary .sunbeam,.weary .motes { opacity:.25; }
-@media(min-width:700px) { .tamago { background:linear-gradient(#10231bd9,#10231be8),url('/art/home-base.webp') center/cover; } .tamago .app-screen { background:transparent; } .tamago-content { box-shadow:0 0 100px #08181390; background:#172e28; } }
+@media(min-width:700px) { .tamago { background:linear-gradient(#10231bd9,#10231be8),url('/art/home-room.webp') center/cover; } .tamago .app-screen { background:transparent; } .tamago-content { box-shadow:0 0 100px #08181390; background:#172e28; } }
 @media(max-width:360px) { .home-paper { margin-left:10px; margin-right:10px; padding:17px; } .scene-header h1 { font-size:26px; } .scene-header .eyebrow { font-size:10px; } .home-paper h2 { font-size:19px; } }
 @media(prefers-reduced-motion:reduce) { .tamago * { animation:none!important; transition:none!important; } }
 .tamago-content { width:100%; max-width:480px; }
