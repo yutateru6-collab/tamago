@@ -203,11 +203,17 @@ test('priority UX: first goal, compact secondary screens, safe usage confirmatio
 
   const raw=await page.evaluate(()=>localStorage.getItem('tamago.world.v1'));
   const world=raw?JSON.parse(raw):initialWorld();
-  const backup=JSON.stringify({format:'tamago-backup',version:1,exportedAt:Date.now(),world});
-  await page.locator('input[type="file"]').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});
+  const restoredWorld={...world,inventory:{...world.inventory,wood:9}};
+  const backup=JSON.stringify({format:'tamago-backup',version:1,exportedAt:Date.now(),world:restoredWorld});
+  const input=page.locator('input[type="file"]');
+  await input.setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});
   await expect(page.getByRole('button',{name:'このバックアップを復元する'})).toBeVisible();
   await page.getByRole('button',{name:'復元しない'}).click();
   await expect(page.getByRole('status')).toContainText('現在の記録はそのまま');
+  await input.setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup)});
+  await page.getByRole('button',{name:'このバックアップを復元する'}).click();
+  await expect(page.getByRole('status')).toContainText('バックアップを復元しました');
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('tamago.world.v1')!).inventory.wood)).toBe(9);
 });
 
 
