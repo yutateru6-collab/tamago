@@ -97,3 +97,9 @@ The user explicitly says to keep the character currently installed and start wit
 Every user-facing progress update and handoff for tamago must include the production URL: https://tamago.itisnowornever271.workers.dev/ . The user checks on a smartphone; local previews and build artifacts are review tools, not a substitute for the public URL. Distinguish verified deployment from code-only changes.
 
 Keep progression rates, crafting costs, daily wear caps, self-report boundaries and saved achievements unchanged during journey UI work. Outcome text must describe the actual committed state transition, not predicted or animation-driven rewards. Persist the report with the existing rest transaction so reloading cannot rewrite or duplicate the outcome. See docs/journey.md.
+
+
+## Approved home growth artwork — 2026-09-19
+The current animated workshop/waterfall scene is the untouched default home (growth stage 0). The user approved three specific richer home illustrations using the same teal long-eared companion: `/art/home-growth-1.png`, `home-growth-2.png`, and `home-growth-3.png`. When the home is warm, show stage 1 after one completed furnishing, stage 2 after two, and stage 3 after all three existing furnishings. Do not substitute a different creature or regenerate these approved images.
+
+Home deterioration takes visual precedence over positive growth art: at faded/damaged/empty wear stages, return to the existing state-driven deterioration layers. Completed furnishing IDs remain saved, so repairing the home reveals the appropriate positive growth stage again. This is presentation logic only; do not change crafting costs, rest/usage rates, daily wear caps, or reward rules.
