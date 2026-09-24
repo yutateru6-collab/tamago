@@ -22,6 +22,8 @@ test('same home, original motion, and only earned furniture at every stage',asyn
     await expect(page.locator('[data-decor="hammock"]')).toHaveCount(['full','faded','damaged','empty'].includes(name)?1:0);
     await expect(page.locator('[data-decor="field-notes"]')).toHaveCount(['finds','full','faded','damaged','empty'].includes(name)?1:0);
     await expect.poll(()=>page.locator('.scene img').evaluateAll(imgs=>imgs.every(img=>(img as HTMLImageElement).complete&&(img as HTMLImageElement).naturalWidth>0)),{timeout:15000}).toBe(true);
+    await page.locator('.scene img').evaluateAll(async imgs=>Promise.all(imgs.map(img=>(img as HTMLImageElement).decode())));
+    await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
     await page.evaluate(()=>document.fonts.ready);
     await page.screenshot({path:`test-results/visual/${info.project.name}-living-${name}.png`});
   }
