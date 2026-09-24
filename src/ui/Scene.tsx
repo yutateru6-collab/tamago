@@ -10,8 +10,9 @@ export function Scene({ world, onSettings }: { world: World; onSettings?: () => 
       <LivingArt world={world}/>
       <div className="sunbeam"/><div className="motes" aria-hidden="true">{Array.from({length:7},(_,i)=><i key={i} style={{left:`${12+i*12}%`,animationDelay:`${-i*1.7}s`}}/>)}</div>
     </div>
-    <header className="scene-header"><p className="eyebrow">スマホを休めると、この子の暮らしが育つ。</p><h1 tabIndex={-1}>こもれびの巣</h1></header>
+    <header className="scene-header"><p className="eyebrow">ひと休みから、暮らしが育つ。</p><h1 tabIndex={-1}>こもれびの巣</h1></header>
     {onSettings && <button className="settings" aria-label="設定と試作モード" onClick={onSettings}><GearIcon /></button>}
     <span className="condition-pill"><span/> {label}</span>
+    <span className="scene-furniture-count" aria-label={`完成した家具 ${world.built.length}個`}>手づくり {world.built.length} / 3</span>
   </section>;
 }

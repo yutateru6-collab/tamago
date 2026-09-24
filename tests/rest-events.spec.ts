@@ -79,7 +79,7 @@ for(const [id,name] of [['original','工房の青い子'],['chestnut','木の実
     for(const tab of ['ホーム','探索','住処','記録']) {
       await page.getByRole('button',{name:tab,exact:true}).click();
       await expect(page.locator('.living-art')).toHaveAttribute('data-companion',id);
-      await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-room.webp');
+      await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-miniature.webp');
       await expect(page.locator('[data-decor="shelf"]')).toHaveCount(0);
       await expect.poll(()=>page.locator('.living-art img').evaluateAll(imgs=>imgs.every(img=>(img as HTMLImageElement).naturalWidth>0))).toBe(true);
     }

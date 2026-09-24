@@ -2,6 +2,7 @@ import '@fontsource/zen-maru-gothic/400.css';
 import '@fontsource/zen-maru-gothic/500.css';
 import '@fontsource/zen-maru-gothic/700.css';
 import './ui/journey.css';
+import './ui/miniature-home.css';
 import { useEffect, useRef, useState } from 'react';
 import { MobileScroll, BottomSheet } from './mobile';
 import { HomeIcon, GlobeIcon, BackpackIcon, ReaderIcon } from '@radix-ui/react-icons';
@@ -56,7 +57,7 @@ function WorldApp({sandbox,changeMode,entryError}:{sandbox:boolean;changeMode:(e
   const exportBackup=()=>{try{const raw=createBackup(app.world);const blob=new Blob([raw],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`tamago-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),0);setBackupStatus('バックアップを書き出しました。大切な場所に保存してください。');}catch{setBackupStatus('バックアップを書き出せませんでした。');}};
   const selectBackup=async(file?:File)=>{if(!file)return;try{const candidate=parseBackup(await file.text());setRestoreCandidate(candidate);setBackupStatus(`バックアップを確認しました。思い出 ${candidate.memories.length}件・完成 ${candidate.built.length}件。まだ現在の記録は変更していません。`);}catch(e){setRestoreCandidate(null);setBackupStatus(e instanceof Error?e.message:'バックアップを確認できませんでした。');}};
   const confirmRestore=()=>{if(!restoreCandidate)return;void act(async()=>{const ok=await app.restore(restoreCandidate);if(ok){setRestoreCandidate(null);setBackupStatus('バックアップを復元しました。進行中だった30分のお約束だけは安全のため終了しました。');}return ok;});};
-  return <CompanionProvider id={sandbox?companion:'original'}><div className={`tamago ${sandbox?'is-sandbox':''}`}>
+  return <CompanionProvider id={sandbox?companion:'original'}><div className={`tamago ${sandbox?'is-sandbox':''} ${tab==='home'&&!away?'home-active':''}`}>
     {sandbox&&<div className="sandbox-banner"><span>開発者モード · 試作用の記録</span><button onClick={()=>{setAway(false);setTab('developer');}}>確認パネル</button><button onClick={()=>changeMode(false)}>通常に戻る</button></div>}
     <MobileScroll key={away?'away':tab} className="app-screen"><main ref={contentRef} className="tamago-content">
       {app.error && <div className="error" role="alert">{app.error}<button onClick={app.reload}>読み直す</button></div>}

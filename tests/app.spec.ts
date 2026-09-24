@@ -82,9 +82,12 @@ test('visual review: Japanese font, iPhone layouts and character motion',async({
   for(const width of [390,320,430]) {
     await page.setViewportSize({width,height:width===320?568:844});
     await page.goto('/');
+    await expect.poll(()=>page.locator('.scene-art').evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);
     await page.evaluate(()=>document.fonts.ready);
     expect(await page.evaluate(()=>document.fonts.check('700 22px "Zen Maru Gothic"','こもれびの巣'))).toBe(true);
     await expect(page.locator('.scene-header h1')).toHaveCSS('font-family',/Zen Maru Gothic/);
+    await expect(page.locator('.scene-furniture-count')).toContainText('0 / 3');
+    if(width===390) await expect(page.getByRole('button',{name:'30分、協力する',exact:true})).toBeInViewport();
     await shot(`${width}-home`);
     await page.getByRole('button',{name:/30分、協力する|お約束のつづきを見る/}).click();
     await expect(page.locator('.quiet-clock strong')).toHaveCSS('font-size','36px');

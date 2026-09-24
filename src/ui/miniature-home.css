@@ -1,0 +1,145 @@
+/* A miniature room around the existing artwork and earned, independently placed objects. */
+.tamago.home-active .app-screen,
+.tamago.home-active .tamago-content { background:#f7f2e9; }
+.tamago.home-active .tamago-content { box-shadow:0 0 80px #0b241d47; }
+
+.tamago .scene {
+  height:calc(400px + env(safe-area-inset-top,0px));
+  min-height:400px;
+  aspect-ratio:auto;
+  background:radial-gradient(ellipse at 50% 0,#fffdf6 0,#f8f2e7 75%);
+  color:#513e2f;
+  isolation:isolate;
+}
+.tamago .scene-header {
+  top:calc(8px + env(safe-area-inset-top,0px));
+  left:52px;
+  right:52px;
+  color:#523b2d;
+  text-shadow:none;
+}
+.tamago .scene-header h1 { margin:1px 0 0; font-size:26px; letter-spacing:.1em; }
+.tamago .scene-header .eyebrow { color:#74614a; font-size:11px; line-height:1.5; }
+.tamago .scene .settings {
+  top:calc(16px + env(safe-area-inset-top,0px));
+  right:16px;
+  width:42px;
+  height:42px;
+  background:#fffbf2;
+  color:#695440;
+  border:1px solid #decfb7;
+  box-shadow:0 3px 9px #8b68462c;
+}
+.tamago .scene .condition-pill,
+.tamago .scene-furniture-count {
+  position:absolute;
+  top:calc(62px + env(safe-area-inset-top,0px));
+  z-index:4;
+  display:flex;
+  align-items:center;
+  min-height:30px;
+  padding:5px 10px;
+  border:1px solid #d9cbb3;
+  border-radius:15px;
+  background:#fffcf4;
+  color:#5c6247;
+  box-shadow:0 3px 9px #805d3c22;
+  font-size:11px;
+  line-height:1.35;
+  backdrop-filter:none;
+}
+.tamago .scene .condition-pill { left:18px; }
+.tamago .scene-furniture-count { right:18px; }
+.tamago .scene .art-stage {
+  top:calc(101px + env(safe-area-inset-top,0px));
+  bottom:19px;
+  left:16px;
+  right:16px;
+  border:5px solid #9f7049;
+  border-radius:19px 19px 12px 12px;
+  background:#8b7655;
+  box-shadow:0 4px 0 #704b30,0 13px 25px #523f2e62,inset 0 0 0 2px #e8bf87;
+  transform:none;
+}
+.tamago .scene .art-stage::after {
+  background:linear-gradient(90deg,#402b1a40,transparent 8%,transparent 92%,#402b1a50),
+             linear-gradient(transparent 77%,#3d392539);
+  box-shadow:inset 0 0 0 3px #dfb7808c;
+}
+.tamago .scene .living-art { top:0; bottom:0; height:100%; }
+.tamago .scene .scene-art,
+.tamago .scene .original-companion,
+.tamago .scene .painted-video,
+.tamago .scene .habitat-layers { top:calc(-1 * clamp(74px,23vw,96px)); }
+.tamago .scene::after {
+  content:'';
+  position:absolute;
+  z-index:3;
+  height:14px;
+  bottom:6px;
+  left:11px;
+  right:11px;
+  border-radius:3px 3px 9px 9px;
+  background:linear-gradient(#b88c61,#815735 55%,#5c3d2b);
+  box-shadow:0 5px 8px #3e2b1a52;
+  pointer-events:none;
+}
+
+/* The original full-size painted still and video remain the only normal companion. */
+.tamago .painted-art .original-companion,
+.tamago .painted-art .painted-video {
+  mask-image:radial-gradient(ellipse 43% 34% at 38% 62%,#000 65%,transparent 96%);
+  mask-size:100% 100%;
+  mask-repeat:no-repeat;
+}
+
+.tamago.home-active .home-paper {
+  position:relative;
+  margin:0 16px 16px;
+  padding:11px 13px 14px;
+  border:1px solid #e4d7c2;
+  border-radius:18px;
+  background:#fffaf1;
+  color:#483c2e;
+  box-shadow:0 5px 16px #76553924;
+}
+.tamago.home-active .compact-life { margin:0 0 5px; padding:0 4px 7px; border-bottom:1px solid #e8decf; }
+.tamago.home-active .compact-life .eyebrow { font-size:11px; color:#75664f; }
+.tamago.home-active .compact-life h3 { margin:2px 0 3px; font-size:15px; color:#3e513c; }
+.tamago.home-active .compact-life progress { height:5px; }
+.tamago.home-active .compact-life small { display:block; margin-top:1px; color:#695f50; font-size:11px; }
+.tamago.home-active .first-project { margin:6px 0; padding:7px 9px; background:#f7f0e3; border-color:#e3d6bd; }
+.tamago.home-active .first-project .project-art { width:34px; height:44px; }
+.tamago.home-active .first-project .project-heading { gap:8px; }
+.tamago.home-active .first-project h3 { margin:0; font-size:14px; line-height:1.4; }
+.tamago.home-active .first-project p { font-size:11px; line-height:1.45; }
+.tamago.home-active .first-project .secondary { min-height:42px; margin-top:5px; padding:6px 10px; font-size:12px; }
+.tamago.home-active .next-rest-plan { margin:6px 0 8px; padding:6px 9px; gap:1px; background:#edf1e7; border-left-color:#7a956d; }
+.tamago.home-active .next-rest-plan strong { color:#3b6049; font-size:12px; }
+.tamago.home-active .next-rest-plan span { color:#5f644d; font-size:11px; line-height:1.45; }
+.tamago.home-active .home-paper>.primary { min-height:53px; border-radius:28px; font-size:15px; }
+.tamago.home-active .honesty-note { margin:7px 0 11px; color:#6b6758; font-size:12px!important; }
+.tamago.home-active .bottom-nav {
+  border-top:1px solid #e2d6c5;
+  background:#fffaf1f2;
+  box-shadow:0 -6px 18px #54442d16;
+}
+.tamago.home-active .bottom-nav button { color:#7a6a59; }
+.tamago.home-active .bottom-nav button[aria-current] { color:#43694d; background:#e8eee3; }
+
+/* Preview mode draws a simulated status bar over the app; fullscreen uses iOS safe-area insets. */
+.phone-stage:not(.fullscreen-stage) .tamago .scene-header { top:52px; }
+.phone-stage:not(.fullscreen-stage) .tamago .scene .settings { top:57px; }
+.phone-stage:not(.fullscreen-stage) .tamago .scene .condition-pill,
+.phone-stage:not(.fullscreen-stage) .tamago .scene-furniture-count { top:109px; }
+
+@media(max-width:359px) {
+  .tamago .scene { height:calc(376px + env(safe-area-inset-top,0px)); min-height:376px; }
+  .tamago .scene .art-stage { left:11px; right:11px; }
+  .tamago .scene-header h1 { font-size:22px; }
+  .tamago .scene .condition-pill,.tamago .scene-furniture-count { font-size:10px; padding:5px 7px; }
+  .tamago.home-active .home-paper { margin-left:11px; margin-right:11px; padding:9px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .tamago .scene .art-stage { transform:none; }
+}
