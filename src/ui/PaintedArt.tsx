@@ -51,7 +51,7 @@ export function PaintedArt({children}: {children?: ReactNode}) {
     if(next&&element){element.hidden=false;playVideo(element,()=>setPlaying(false));}
   };
   return <div className="living-art painted-art" data-motion={animated?'playing':'paused'} data-companion={companion.id}>
-    <img className="scene-art" src="/art/home-room.webp" alt="滝と木漏れ日、小さな灯り。これから暮らしをつくる住処。"/>
+    <img className="scene-art" src="/art/home-miniature.webp" alt="木組みの小さな住処。滝と木漏れ日、小さな灯りのある部屋。"/>
     {companion.id==='original'?<><img className="original-companion" src="/art/workshop-idle.jpg" alt="木漏れ日の工房で、穏やかに過ごす青い子。"/>
     <video ref={video} className="painted-video" aria-label="工房の青い子の原画アニメ" src="/art/workshop-idle.mp4" poster="/art/workshop-idle.jpg" muted loop playsInline preload="metadata" hidden={failed||!running} onPlaying={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onSeeked={event=>{
       // Some WebKit media backends pause while seeking back to the loop start.

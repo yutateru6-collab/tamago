@@ -15,13 +15,15 @@ test('same home, original motion, and only earned furniture at every stage',asyn
   await page.setViewportSize({width:390,height:844});
   for(const name of ['initial','half','shelf','finds','full','faded','damaged','empty']) {
     await seed(page,name);
-    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-room.webp');
+    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-miniature.webp');
     await expect(page.locator('.home-growth-art')).toHaveCount(0);
     await expect(page.getByLabel('工房の青い子の原画アニメ')).toHaveCount(1);
     await expect(page.locator('[data-decor="shelf"]')).toHaveCount(name==='initial'?0:1);
     await expect(page.locator('[data-decor="hammock"]')).toHaveCount(['full','faded','damaged','empty'].includes(name)?1:0);
     await expect(page.locator('[data-decor="field-notes"]')).toHaveCount(['finds','full','faded','damaged','empty'].includes(name)?1:0);
     await expect.poll(()=>page.locator('.scene img').evaluateAll(imgs=>imgs.every(img=>(img as HTMLImageElement).complete&&(img as HTMLImageElement).naturalWidth>0)),{timeout:15000}).toBe(true);
+    await page.locator('.scene img').evaluateAll(async imgs=>Promise.all(imgs.map(img=>(img as HTMLImageElement).decode())));
+    await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
     await page.evaluate(()=>document.fonts.ready);
     await page.screenshot({path:`test-results/visual/${info.project.name}-living-${name}.png`});
   }
@@ -105,7 +107,7 @@ test('normal play builds the shelf, adds only earned keepsakes and survives relo
     await page.clock.setFixedTime(new Date(start+step*1800000));
     await page.getByRole('button',{name:'30分、スマホを休めた'}).click();
     await page.getByRole('button',{name:'住処をのぞく'}).click();
-    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-room.webp');
+    await expect(page.locator('.scene-art')).toHaveAttribute('src','/art/home-miniature.webp');
     await expect(page.getByTestId('home-shelf')).toHaveCount(step>=2?1:0);
     await expect(page.locator('[data-decor="field-notes"]')).toHaveCount(step===6?1:0);
     await expect(page.getByTestId('home-hammock')).toHaveCount(0);
