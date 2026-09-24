@@ -18,7 +18,7 @@
   color:#523b2d;
   text-shadow:none;
 }
-.tamago .scene-header h1 { margin:1px 0 0; font-size:26px; letter-spacing:.1em; }
+.tamago .scene-header h1 { display:inline-block; margin:1px 0 0; font-size:26px; letter-spacing:.1em; }
 .tamago .scene-header .eyebrow { color:#74614a; font-size:11px; line-height:1.5; }
 .tamago .scene .settings {
   top:calc(16px + env(safe-area-inset-top,0px));
@@ -121,7 +121,7 @@
 .tamago.home-active .honesty-note { margin:7px 0 11px; color:#6b6758; font-size:12px!important; }
 .tamago.home-active .bottom-nav {
   border-top:1px solid #e2d6c5;
-  background:#fffaf1f2;
+  background:#fffaf1;
   box-shadow:0 -6px 18px #54442d16;
 }
 .tamago.home-active .bottom-nav button { color:#7a6a59; }

@@ -102,6 +102,9 @@ test('visual review: Japanese font, iPhone layouts and character motion',async({
 
 
 test('original painting plays on home and quiet screen without legacy deformation',async({page})=>{
+  // WebKit can take longer to resume the source video under parallel CI load;
+  // this test also intentionally observes playback for another 10.5 seconds.
+  test.setTimeout(90000);
   await page.setViewportSize({width:390,height:844});
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto('/');
