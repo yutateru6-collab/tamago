@@ -51,7 +51,7 @@
 .tamago .scene .condition-pill { left:18px; }
 .tamago .scene-furniture-count { right:18px; }
 .tamago .scene .art-stage {
-  top:calc(101px + env(safe-area-inset-top,0px));
+  top:calc(113px + env(safe-area-inset-top,0px));
   bottom:19px;
   left:16px;
   right:16px;
